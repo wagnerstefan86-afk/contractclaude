@@ -1,0 +1,45 @@
+baseline:
+  version: "1.0"
+  valid_from: "2026-01-01"
+
+  certifications:
+    - standard: "ISO 27001"
+      scope: "Managed Services, Workplace, RZ-Betrieb"
+      valid_until: "2027-06-30"
+      covers_all_services: false
+      excluded_services:
+        - "Hardware-Resale"
+        - "Lizenzverkauf"
+
+  standard_positions:
+    audit_rights:
+      accepted: >
+        1x jährlich, über Auftraggeber koordiniert, 20 Werktage Vorlaufzeit,
+        während Geschäftszeiten, Kosten nach Aufwand
+      not_accepted: >
+        Direkte Endkunden-Audits, jederzeitige Prüfung ohne Anlass,
+        kostenfreie Bereitstellung
+      escalation_threshold: >
+        Drittaudits ohne Mandantenschutz und ohne Kostentragung
+
+    incident_reporting:
+      accepted: >
+        24h Erstmeldung, 72h qualifizierter Bericht,
+        30 Tage Abschlussbericht
+      not_accepted: >
+        4h Root-Cause-Analyse, Echtzeit-Benachrichtigung bei jedem Event
+      escalation_threshold: >
+        Meldepflichten die faktisch einen 24/7-CSIRT voraussetzen,
+        wenn nicht bepreist
+
+  service_profiles:
+    - service_type: managed_service
+      delivery_model: shared
+      tenant_model: multi_tenant
+      baseline_controls:
+        - isms
+        - patch_management
+        - vulnerability_scanning
+        - backup
+        - monitoring
+        - incident_process

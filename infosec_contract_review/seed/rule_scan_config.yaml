@@ -1,0 +1,5 @@
+# Rule scanner configuration – placeholder for future work packages.
+# Kept as seed file to maintain project structure convention.
+rule_scan_config:
+  version: "1.0"
+  enabled: false

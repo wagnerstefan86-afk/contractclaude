@@ -1,0 +1,38 @@
+cross_theme_rules:
+  - rule_id: CTR-001
+    version: "1.0"
+    name: "SLA vs BCM/ITSCM conflict"
+    theme_a: sla_feasibility
+    theme_b: bcm_itscm
+    trigger_condition: >
+      SLA availability >= 99.5% AND
+      (RTO > 4h OR no explicit SLA suspension clause during DR found)
+    check_prompt: >
+      Prüfe ob die SLA-Anforderungen auch während eines
+      Business-Continuity-Falls oder Disaster-Recovery-Szenarios gelten.
+      Gibt es eine explizite SLA-Suspension bei DR?
+      Wenn nicht: Welche Vertragsstrafen drohen während eines Notfalls?
+      Antwort als JSON: {"result": "conflict_found|no_conflict|unclear",
+      "rationale": "...", "confidence": "high|medium|low"}
+    default_materiality_floor: high
+    is_active: true
+    owner: "InfoSec Governance"
+
+  - rule_id: CTR-003
+    version: "1.0"
+    name: "Incident reporting deadlines vs support model"
+    theme_a: incident_reporting
+    theme_b: sla_feasibility
+    trigger_condition: >
+      Incident initial notification deadline <= 4h AND
+      support model is not 24x7
+    check_prompt: >
+      Prüfe ob die geforderten Meldefristen für Sicherheitsvorfälle
+      mit dem vereinbarten Support-Modell vereinbar sind.
+      Kann die Erstmeldung innerhalb der geforderten Frist auch
+      außerhalb der Servicezeiten erfolgen?
+      Antwort als JSON: {"result": "conflict_found|no_conflict|unclear",
+      "rationale": "...", "confidence": "high|medium|low"}
+    default_materiality_floor: high
+    is_active: true
+    owner: "InfoSec Governance"

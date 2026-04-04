@@ -1,0 +1,66 @@
+lenses:
+  - lens_id: LENS-AUDIT
+    version: "1.0"
+    theme: audit_rights
+    prompt_template_id: PT-AUDIT-v1.0
+    segment_filter:
+      routing_tiers:
+        - clearly_relevant
+        - potentially_relevant
+      deterministic_flags_any:
+        - audit
+        - inspection
+        - review_right
+        - third_party_access
+        - unlimited_audit
+        - cost_free
+        - anytime
+        - examination
+        - pruefung
+        - kontrolle
+        - einsichtnahme
+    include_neighbor_context: true
+    max_segments_per_call: 25
+    is_active: true
+    owner: "InfoSec Governance"
+    expected_safeguards:
+      - safeguard_key: frequency_limit
+        label: "Begrenzung der Auditfrequenz"
+        maps_to_limit_field: frequency_limit
+      - safeguard_key: notice_period
+        label: "Vorlaufzeit für Audits"
+        maps_to_limit_field: time_limit
+      - safeguard_key: cost_allocation
+        label: "Kostentragungsregelung für Audits"
+        maps_to_limit_field: cost_limit
+
+  - lens_id: LENS-INCIDENT
+    version: "1.0"
+    theme: incident_reporting
+    prompt_template_id: PT-INCIDENT-v1.0
+    segment_filter:
+      routing_tiers:
+        - clearly_relevant
+        - potentially_relevant
+      deterministic_flags_any:
+        - incident
+        - breach
+        - notification
+        - meldepflicht
+        - sicherheitsvorfall
+        - response_time
+        - root_cause
+        - forensic
+        - unverzueglich
+        - immediately
+    include_neighbor_context: true
+    max_segments_per_call: 25
+    is_active: true
+    owner: "InfoSec Governance"
+    expected_safeguards:
+      - safeguard_key: initial_notification_deadline
+        label: "Frist für Erstmeldung"
+        maps_to_limit_field: null
+      - safeguard_key: qualified_report_deadline
+        label: "Frist für qualifizierten Bericht"
+        maps_to_limit_field: null

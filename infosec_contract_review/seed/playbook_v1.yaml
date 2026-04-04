@@ -1,0 +1,43 @@
+playbook_entries:
+  - id: PB-AUDIT-001
+    version: "1.0"
+    theme: audit_rights
+    risk_pattern: "Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit"
+    standard_position: >
+      Audits nur über den Auftraggeber, mit angemessener Vorlaufzeit,
+      während üblicher Geschäftszeiten und mit Häufigkeitsbegrenzung.
+    alt_wordings:
+      - >
+        Audits erfolgen über den Auftraggeber mit einer Vorlaufzeit
+        von 20 Werktagen, max. 1x jährlich, während üblicher
+        Geschäftszeiten.
+    bidder_questions:
+      - "Welche maximale Auditfrequenz ist vorgesehen?"
+      - "Mit welcher Vorlaufzeit sollen Audits angekündigt werden?"
+    applicable_when: >
+      Auditklausel enthält keine Begrenzung von Häufigkeit,
+      Vorlaufzeit oder Zeitfenster.
+    escalation_note: null
+
+  - id: PB-INC-003
+    version: "1.0"
+    theme: incident_reporting
+    risk_pattern: "Regulatorische Meldepflichten durchgereicht"
+    standard_position: >
+      Auftragnehmer unterstützt den Auftraggeber bei dessen
+      Meldepflichten, übernimmt aber nicht selbst die Meldeverpflichtung.
+    alt_wordings:
+      - >
+        Der Auftragnehmer unterstützt den Auftraggeber bei der
+        Erfüllung seiner regulatorischen Meldepflichten durch
+        zeitnahe Bereitstellung der erforderlichen Informationen.
+        Die Meldepflicht selbst verbleibt beim Auftraggeber.
+    bidder_questions:
+      - "Soll der Auftragnehmer selbst gegenüber Behörden meldepflichtig sein?"
+      - "Welche regulatorischen Meldepflichten bestehen beim Auftraggeber?"
+    applicable_when: >
+      Vertrag enthält Formulierungen die regulatorische Meldepflichten
+      direkt auf den Auftragnehmer übertragen.
+    escalation_note: >
+      No-Go wenn: Auftragnehmer soll faktisch als verantwortliche
+      Stelle gegenüber Aufsichtsbehörden auftreten.
