@@ -29,6 +29,11 @@ class Document(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     doc_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     language: Mapped[str | None] = mapped_column(String(10), nullable=True)
     page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    storage_path: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    ingestion_status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending", server_default="pending"
+    )
+    ingestion_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     package: Mapped["ContractPackage"] = relationship(back_populates="documents")
 

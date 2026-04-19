@@ -49,6 +49,10 @@ class SegmentType(str, enum.Enum):
     SECTION = "section"
     ANNEX = "annex"
     SCHEDULE = "schedule"
+    HEADING = "heading"
+    TABLE_CELL = "table_cell"
+    LIST_ITEM = "list_item"
+    QUESTIONNAIRE_ITEM = "questionnaire_item"
 
 
 class ObligationType(str, enum.Enum):

@@ -1,5 +1,117 @@
-# Rule scanner configuration – placeholder for future work packages.
-# Kept as seed file to maintain project structure convention.
 rule_scan_config:
   version: "1.0"
-  enabled: false
+  enabled: true
+
+  high_signal_phrases:
+    - pattern: "(?i)\\bjederzeit\\b.*\\b(audit|prüf|kontroll|inspect)"
+      flags: [unlimited_audit, anytime]
+      theme: audit_rights
+    - pattern: "(?i)\\b(audit|prüf).*\\bjederzeit\\b"
+      flags: [unlimited_audit, anytime]
+      theme: audit_rights
+    - pattern: "(?i)\\bunlimited\\s+(audit|inspection|access)"
+      flags: [unlimited_audit]
+      theme: audit_rights
+    - pattern: "(?i)\\b(kostenfrei|unentgeltlich|ohne\\s+kosten).*\\b(audit|prüf)"
+      flags: [cost_free]
+      theme: audit_rights
+    - pattern: "(?i)\\b(sofort|unverzüglich|immediately|without\\s+delay).*\\b(meld|notif|report)"
+      flags: [immediate_notification]
+      theme: incident_reporting
+    - pattern: "(?i)\\b(vertragsstrafe|penalty|pönale).*\\b(unbegrenzt|unlimited|ohne.*begrenzung)"
+      flags: [unlimited_penalty]
+      theme: sla_feasibility
+    - pattern: "(?i)99[.,]99\\s*%"
+      flags: [extreme_sla]
+      theme: sla_feasibility
+
+  medium_signal_keywords:
+    - keyword: "audit"
+      flags: [audit]
+      theme: audit_rights
+    - keyword: "inspection"
+      flags: [inspection]
+      theme: audit_rights
+    - keyword: "prüfung"
+      flags: [audit]
+      theme: audit_rights
+    - keyword: "prüfen"
+      flags: [audit]
+      theme: audit_rights
+    - keyword: "kontrolle"
+      flags: [audit]
+      theme: audit_rights
+    - keyword: "einsichtnahme"
+      flags: [review_right]
+      theme: audit_rights
+    - keyword: "third_party_access"
+      flags: [third_party_access]
+      theme: audit_rights
+    - keyword: "drittprüfer"
+      flags: [third_party_access]
+      theme: audit_rights
+    - keyword: "incident"
+      flags: [incident]
+      theme: incident_reporting
+    - keyword: "sicherheitsvorfall"
+      flags: [incident]
+      theme: incident_reporting
+    - keyword: "meldepflicht"
+      flags: [notification]
+      theme: incident_reporting
+    - keyword: "breach"
+      flags: [breach]
+      theme: incident_reporting
+    - keyword: "verfügbarkeit"
+      flags: [availability]
+      theme: sla_feasibility
+    - keyword: "availability"
+      flags: [availability]
+      theme: sla_feasibility
+    - keyword: "sla"
+      flags: [sla]
+      theme: sla_feasibility
+    - keyword: "service level"
+      flags: [sla]
+      theme: sla_feasibility
+    - keyword: "vertragsstrafe"
+      flags: [penalty]
+      theme: sla_feasibility
+    - keyword: "penalty"
+      flags: [penalty]
+      theme: sla_feasibility
+    - keyword: "wartungsfenster"
+      flags: [maintenance_window]
+      theme: sla_feasibility
+    - keyword: "subunternehmer"
+      flags: [subcontractor]
+      theme: subcontractor
+    - keyword: "unterauftragnehmer"
+      flags: [subcontractor]
+      theme: subcontractor
+    - keyword: "zertifizierung"
+      flags: [certification]
+      theme: certifications
+    - keyword: "iso 27001"
+      flags: [certification]
+      theme: certifications
+    - keyword: "haftung"
+      flags: [liability]
+      theme: liability_transfer
+    - keyword: "liability"
+      flags: [liability]
+      theme: liability_transfer
+
+  structural_signals:
+    - keyword: "anlage"
+      flags: [annex_reference]
+    - keyword: "anhang"
+      flags: [annex_reference]
+    - keyword: "schedule"
+      flags: [annex_reference]
+    - keyword: "gemäß"
+      flags: [cross_reference]
+    - keyword: "i.s.d."
+      flags: [legal_reference]
+    - keyword: "pursuant to"
+      flags: [cross_reference]

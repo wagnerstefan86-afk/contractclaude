@@ -17,7 +17,17 @@ class Segment(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
     text: Mapped[str] = mapped_column(Text, nullable=False)
     heading: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    heading_path: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
     routing_tier: Mapped[str | None] = mapped_column(String(30), nullable=True)
     deterministic_flags: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     routed_themes: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    parse_quality: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    preceding_segment_id: Mapped[str | None] = mapped_column(
+        String(36), nullable=True
+    )
+    following_segment_id: Mapped[str | None] = mapped_column(
+        String(36), nullable=True
+    )
+    language: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    extra: Mapped[dict | None] = mapped_column(JSONB, nullable=True)

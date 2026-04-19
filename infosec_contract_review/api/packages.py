@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from infosec_contract_review.core.database import get_db
 from infosec_contract_review.models.package import ContractPackage, Document
+from infosec_contract_review.pipeline.ingestion import ingest_document
 from infosec_contract_review.schemas.domain import (
     DocumentOut,
     PackageBrief,
@@ -109,6 +110,8 @@ def upload_document(
         doc_type=document_type or ext,
         language=None,
         page_count=None,
+        storage_path=storage_path,
+        ingestion_status="pending",
     )
     db.add(doc)
     db.commit()
@@ -124,3 +127,68 @@ def list_documents(package_id: str, db: Session = Depends(get_db)):
     if not pkg:
         raise HTTPException(404, f"Package {package_id} not found")
     return pkg.documents
+
+
+@router.post("/{package_id}/documents/{document_id}/parse")
+def parse_document_endpoint(package_id: str, document_id: str, db: Session = Depends(get_db)):
+    pkg = db.get(ContractPackage, package_id)
+    if not pkg:
+        raise HTTPException(404, f"Package {package_id} not found")
+
+    doc = db.get(Document, document_id)
+    if not doc or doc.package_id != package_id:
+        raise HTTPException(404, f"Document {document_id} not found in package {package_id}")
+
+    if doc.ingestion_status == "parsed":
+        raise HTTPException(400, f"Document {document_id} already parsed")
+
+    if doc.ingestion_status not in ("pending", "failed"):
+        raise HTTPException(400, f"Document {document_id} has status '{doc.ingestion_status}', expected 'pending'")
+
+    try:
+        result = ingest_document(document_id, db)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    if result["status"] == "failed":
+        raise HTTPException(400, result.get("error", "Parsing failed"))
+
+    logger.info("Parsed document %s: %d segments", document_id, result["segment_count"])
+    return result
+
+
+@router.post("/{package_id}/parse-all")
+def parse_all_documents(package_id: str, db: Session = Depends(get_db)):
+    pkg = db.get(ContractPackage, package_id)
+    if not pkg:
+        raise HTTPException(404, f"Package {package_id} not found")
+
+    parsed = 0
+    skipped = 0
+    failed = 0
+    total_segments = 0
+
+    for doc in pkg.documents:
+        if doc.ingestion_status == "parsed":
+            skipped += 1
+            continue
+        if doc.ingestion_status != "pending":
+            skipped += 1
+            continue
+        try:
+            result = ingest_document(doc.id, db)
+            if result["status"] == "parsed":
+                parsed += 1
+                total_segments += result["segment_count"]
+            else:
+                failed += 1
+        except Exception as e:
+            failed += 1
+            logger.error("Failed to parse %s: %s", doc.filename, e)
+
+    return {
+        "parsed": parsed,
+        "skipped": skipped,
+        "failed": failed,
+        "total_segments": total_segments,
+    }

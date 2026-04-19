@@ -32,6 +32,7 @@ class DocumentBrief(BaseModel):
     doc_type: str | None
     language: str | None
     page_count: int | None
+    ingestion_status: str = "pending"
     created_at: datetime
 
 
@@ -62,6 +63,8 @@ class DocumentOut(BaseModel):
     doc_type: str | None
     language: str | None
     page_count: int | None
+    ingestion_status: str = "pending"
+    ingestion_error: str | None = None
     created_at: datetime
 
 
@@ -186,10 +189,16 @@ class SegmentOut(BaseModel):
     segment_type: str
     text: str
     heading: str | None
+    heading_path: list | None = None
     page_number: int | None
     routing_tier: str | None
     deterministic_flags: list | None
     routed_themes: list | None
+    parse_quality: str | None = None
+    preceding_segment_id: str | None = None
+    following_segment_id: str | None = None
+    language: str | None = None
+    extra: dict | None = None
 
 
 # ---------------------------------------------------------------------------
