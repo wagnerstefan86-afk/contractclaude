@@ -32,6 +32,37 @@ baseline:
         Meldepflichten die faktisch einen 24/7-CSIRT voraussetzen,
         wenn nicht bepreist
 
+    bcm_itscm:
+      accepted: >
+        RTO/RPO dokumentiert und testiert, jährlicher BCM-Test,
+        Ergebnisse auf Anfrage verfügbar
+      not_accepted: >
+        Keine dokumentierten RTO/RPO, kein Nachweis über BCM-Tests
+      escalation_threshold: >
+        Fehlende BCM-Dokumentation bei kritischen Services mit SLA >= 99.5%
+
+    sla_feasibility:
+      accepted: >
+        Verfügbarkeit <= 99.9%, Wartungsfenster explizit ausgenommen,
+        Messmethodik definiert, Vertragsstrafen gedeckelt
+      not_accepted: >
+        Verfügbarkeit >= 99.99% ohne Wartungsfenster-Ausnahme,
+        unbegrenzte Vertragsstrafen, transaktionsbasierte Messung
+      escalation_threshold: >
+        SLA >= 99.95% ohne DR-Suspension-Klausel oder ohne
+        definierte Messmethodik
+
+    certifications:
+      accepted: >
+        ISO 27001 oder SOC 2 Type II für Kernservices,
+        Rezertifizierung alle 3 Jahre, Scope umfasst Vertragsgegenstand
+      not_accepted: >
+        Keine Zertifizierung, nur Self-Assessment, Scope deckt
+        Vertragsgegenstand nicht ab
+      escalation_threshold: >
+        Fehlende Zertifizierung bei regulierten Services oder
+        bei expliziter vertraglicher Anforderung
+
   service_profiles:
     - service_type: managed_service
       delivery_model: shared
@@ -43,3 +74,20 @@ baseline:
         - backup
         - monitoring
         - incident_process
+
+    - service_type: workplace
+      delivery_model: shared
+      tenant_model: multi_tenant
+      baseline_controls:
+        - endpoint_protection
+        - patch_management
+        - mobile_device_management
+        - data_loss_prevention
+        - incident_process
+
+    - service_type: hardware_resale
+      delivery_model: transactional
+      tenant_model: not_applicable
+      baseline_controls:
+        - secure_supply_chain
+        - hardware_lifecycle_management

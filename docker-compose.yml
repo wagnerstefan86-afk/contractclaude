@@ -22,6 +22,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./infosec_contract_review/seed:/app/infosec_contract_review/seed:ro
     command: ["bash", "entrypoint.sh"]
 
 volumes:

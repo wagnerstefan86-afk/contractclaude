@@ -33,6 +33,15 @@ lenses:
       - safeguard_key: cost_allocation
         label: "Kostentragungsregelung für Audits"
         maps_to_limit_field: cost_limit
+      - safeguard_key: tenant_protection
+        label: "Mandantenschutz bei Audits"
+        maps_to_limit_field: access_limit
+      - safeguard_key: scope_limitation
+        label: "Scope-Begrenzung auf Vertragsgegenstand"
+        maps_to_limit_field: scope_limit
+      - safeguard_key: confidentiality_protection
+        label: "Vertraulichkeitsschutz bei Drittaudits"
+        maps_to_limit_field: null
 
   - lens_id: LENS-INCIDENT
     version: "1.0"
@@ -63,4 +72,47 @@ lenses:
         maps_to_limit_field: null
       - safeguard_key: qualified_report_deadline
         label: "Frist für qualifizierten Bericht"
+        maps_to_limit_field: null
+
+  - lens_id: LENS-SLA
+    version: "1.0"
+    theme: sla_feasibility
+    prompt_template_id: PT-SLA-v1.0
+    segment_filter:
+      routing_tiers:
+        - clearly_relevant
+        - potentially_relevant
+        - structurally_relevant
+      deterministic_flags_any:
+        - sla
+        - availability
+        - verfuegbarkeit
+        - uptime
+        - maintenance_window
+        - wartungsfenster
+        - response_time
+        - resolution_time
+        - penalty
+        - vertragsstrafe
+        - service_level
+        - service_credit
+    include_neighbor_context: true
+    max_segments_per_call: 30
+    is_active: true
+    owner: "InfoSec Governance"
+    expected_safeguards:
+      - safeguard_key: maintenance_window_exclusion
+        label: "Ausnahme geplanter Wartungsfenster"
+        maps_to_limit_field: null
+      - safeguard_key: measurement_method
+        label: "Definierte Messmethodik"
+        maps_to_limit_field: null
+      - safeguard_key: force_majeure_exclusion
+        label: "Force-Majeure-Ausnahme"
+        maps_to_limit_field: null
+      - safeguard_key: penalty_cap
+        label: "Vertragsstrafen-Deckelung"
+        maps_to_limit_field: null
+      - safeguard_key: dr_suspension
+        label: "SLA-Suspension bei DR/BCM-Fall"
         maps_to_limit_field: null

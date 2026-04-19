@@ -15,33 +15,74 @@ System, sondern die technische Grundlage für einen kontrollierten Test.
 
 ---
 
-## Bootstrap: Datenbank einrichten
+## Bootstrap mit Docker Compose
+
+### Vorbereitung
+
+```bash
+cp .env.example .env   # optional, docker-compose.yml hat eigene Defaults
+```
+
+### Starten
+
+```bash
+docker compose build
+docker compose up
+```
+
+Der `bootstrap`-Container führt automatisch Migration und Seeding aus und
+beendet sich. Postgres bleibt laufen.
+
+### YAML-Änderungen ohne Rebuild übernehmen
+
+Das Seed-Verzeichnis ist beim `bootstrap`-Service als Read-only-Volume
+gemountet:
+
+```
+./infosec_contract_review/seed  →  /app/infosec_contract_review/seed:ro
+```
+
+Eine geänderte YAML-Datei auf dem Host ist beim nächsten Lauf sofort
+wirksam – kein `docker compose build` erforderlich:
+
+```bash
+# YAML auf dem Host ändern, dann:
+docker compose run --rm bootstrap
+```
+
+### Datenbank zurücksetzen
+
+```bash
+docker compose down -v   # löscht auch das Postgres-Volume
+docker compose up --build
+```
+
+---
+
+## Lokale Entwicklung ohne Docker
 
 ### Voraussetzungen
 
 - Python 3.11+
-- PostgreSQL 15+ (lokal oder remote)
-- Die Datenbank `contract_review` muss existieren
+- PostgreSQL 15+
 
-### Installation
+### Setup
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ### Umgebungsvariablen
 
-| Variable       | Default                                                      | Beschreibung         |
-|----------------|--------------------------------------------------------------|----------------------|
-| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/contract_review` | SQLAlchemy-DB-URL |
-
-Beispiel:
-
 ```bash
-export DATABASE_URL="postgresql://user:pass@host:5432/contract_review"
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/contract_review"
 ```
 
-### Postgres-Datenbank anlegen (falls noch nicht vorhanden)
+Alle verfügbaren Variablen sind in `.env.example` dokumentiert.
+
+### Datenbank anlegen
 
 ```bash
 createdb contract_review
@@ -71,14 +112,14 @@ INFO  [alembic.runtime.migration] Running upgrade  -> 0001, initial schema - all
 python -m infosec_contract_review.scripts.seed_db
 ```
 
-Erwartete Ausgabe:
+Erwartete Ausgabe und Counts:
 
 ```
 INFO  Seed loading complete. Summary:
-INFO    provider_baseline           X records
-INFO    lens_configs                X records
-INFO    cross_theme_rules           X records
-INFO    playbook_entries            X records
+INFO    provider_baseline         10 records   (1 Baseline + 1 Cert + 5 StdPos + 3 ServiceProfiles)
+INFO    lens_configs              16 records   (3 Lenses + 13 ExpectedSafeguards)
+INFO    cross_theme_rules          3 records   (CTR-001, CTR-002, CTR-003)
+INFO    playbook_entries           9 records   (PB-AUDIT-001–003, PB-INC-001–003, PB-SLA-001–003)
 ```
 
 Ein zweiter Lauf aktualisiert bestehende Datensätze (Upsert), erzeugt keine Duplikate.
@@ -89,16 +130,27 @@ Ein zweiter Lauf aktualisiert bestehende Datensätze (Upsert), erzeugt keine Dup
 python -m infosec_contract_review.scripts.reset_db
 ```
 
-Löscht alle Tabellen, führt Migration erneut aus und lädt Seeds.
+**Achtung:** `reset_db` löscht alle Tabellen ohne Sicherheitsabfrage und ist
+ausschließlich für die lokale Entwicklung gedacht.
 
-### Seed-Dateien
+---
+
+## Seed-Dateien
 
 Alle Fachkonfigurationen liegen in `infosec_contract_review/seed/`:
 
-| Datei                    | Inhalt                                  |
-|--------------------------|-----------------------------------------|
-| `provider_baseline.yaml` | Provider-Baseline inkl. Zertifizierungen |
-| `lens_configs.yaml`      | Analyse-Linsen + Expected Safeguards     |
-| `cross_theme_rules.yaml` | Themenübergreifende Prüfregeln          |
-| `playbook_v1.yaml`       | Verhandlungs-Playbook                   |
-| `rule_scan_config.yaml`  | Platzhalter für Rule Scanner            |
+| Datei                    | Inhalt                                           | Records |
+|--------------------------|--------------------------------------------------|---------|
+| `provider_baseline.yaml` | Provider-Baseline, Zertifizierungen, Positionen  | 10      |
+| `lens_configs.yaml`      | 3 Analyse-Linsen + 13 Expected Safeguards        | 16      |
+| `cross_theme_rules.yaml` | 3 themenübergreifende Prüfregeln                 | 3       |
+| `playbook_v1.yaml`       | 9 Verhandlungs-Playbook-Einträge                 | 9       |
+| `rule_scan_config.yaml`  | Platzhalter für Rule Scanner                     | –       |
+
+### Lens-Übersicht
+
+| Lens-ID        | Theme              | Safeguards |
+|----------------|--------------------|------------|
+| LENS-AUDIT     | audit_rights       | 6          |
+| LENS-INCIDENT  | incident_reporting | 2          |
+| LENS-SLA       | sla_feasibility    | 5          |

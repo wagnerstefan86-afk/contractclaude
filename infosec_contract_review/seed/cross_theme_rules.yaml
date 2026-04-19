@@ -18,6 +18,26 @@ cross_theme_rules:
     is_active: true
     owner: "InfoSec Governance"
 
+  - rule_id: CTR-002
+    version: "1.0"
+    name: "Audit rights vs tenant protection"
+    theme_a: audit_rights
+    theme_b: security_controls
+    trigger_condition: >
+      Audit right includes third_party_access OR client_end_customer access AND
+      delivery_model = shared AND tenant_model = multi_tenant
+    check_prompt: >
+      Prüfe ob das Auditrecht Zugang zu Systemen ermöglicht, die im
+      Multi-Tenant-Betrieb auch von anderen Kunden genutzt werden.
+      Gibt es Mandantenschutzklauseln, die den Zugriff begrenzen?
+      Besteht ein Risiko, dass Auditoren eines Kunden Daten anderer
+      Mandanten einsehen können?
+      Antwort als JSON: {"result": "conflict_found|no_conflict|unclear",
+      "rationale": "...", "confidence": "high|medium|low"}
+    default_materiality_floor: high
+    is_active: true
+    owner: "InfoSec Governance"
+
   - rule_id: CTR-003
     version: "1.0"
     name: "Incident reporting deadlines vs support model"

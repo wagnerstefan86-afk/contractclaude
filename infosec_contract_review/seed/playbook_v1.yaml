@@ -19,6 +19,90 @@ playbook_entries:
       Vorlaufzeit oder Zeitfenster.
     escalation_note: null
 
+  - id: PB-AUDIT-002
+    version: "1.0"
+    theme: audit_rights
+    risk_pattern: "Direktes Auditrecht für Endkunden oder Dritte"
+    standard_position: >
+      Auditrechte werden ausschließlich dem Auftraggeber gewährt.
+      Dritte und Endkunden haben kein eigenständiges Auditrecht.
+      Drittaudits nur mit vorheriger Zustimmung und unter Mandantenschutz.
+    alt_wordings:
+      - >
+        Audits durch Dritte oder Endkunden des Auftraggebers sind
+        nur mit schriftlicher Zustimmung des Auftragnehmers und
+        unter Wahrung des Mandantenschutzes zulässig.
+    bidder_questions:
+      - "Ist ein direktes Auditrecht für Endkunden des Auftraggebers vorgesehen?"
+      - "Wie wird der Mandantenschutz bei Drittaudits sichergestellt?"
+    applicable_when: >
+      Vertrag räumt Dritten oder Endkunden des Auftraggebers
+      eigenständige Auditrechte ein.
+    escalation_note: >
+      No-Go wenn: Endkunden können ohne Koordination über den
+      Auftraggeber direkt prüfen.
+
+  - id: PB-AUDIT-003
+    version: "1.0"
+    theme: audit_rights
+    risk_pattern: "Kostenfreie Auditunterstützung"
+    standard_position: >
+      Auditunterstützung durch den Auftragnehmer erfolgt auf Kostenbasis
+      nach Aufwand. Kostenfreie Bereitstellung ist nicht akzeptabel.
+    alt_wordings:
+      - >
+        Der Auftragnehmer stellt Auditunterstützung gegen Erstattung
+        des nachgewiesenen Aufwands zur Verfügung.
+    bidder_questions:
+      - "Wie wird der Aufwand für Auditunterstützung abgerechnet?"
+      - "Gibt es eine Kostenpauschale oder erfolgt Abrechnung nach Aufwand?"
+    applicable_when: >
+      Vertrag sieht kostenfreie Bereitstellung von Auditunterstützung,
+      Dokumentation oder Personalressourcen vor.
+    escalation_note: null
+
+  - id: PB-INC-001
+    version: "1.0"
+    theme: incident_reporting
+    risk_pattern: "Unrealistisch kurze Meldefrist"
+    standard_position: >
+      Erstmeldung innerhalb von 24 Stunden ist akzeptabel.
+      Fristen unter 4 Stunden sind nur akzeptabel, wenn ein 24/7-CSIRT
+      explizit bepreist und beauftragt ist.
+    alt_wordings:
+      - >
+        Die initiale Meldung erfolgt innerhalb von 24 Stunden nach
+        Feststellung des Sicherheitsvorfalls.
+    bidder_questions:
+      - "Gilt die Meldefrist auch außerhalb der Servicezeiten?"
+      - "Ist ein 24/7-CSIRT für die Einhaltung dieser Frist bepreist?"
+    applicable_when: >
+      Vertrag fordert Erstmeldung innerhalb von weniger als 4 Stunden
+      oder außerhalb der vereinbarten Servicezeiten.
+    escalation_note: >
+      No-Go wenn: Meldefrist < 4h ohne 24/7-Support-Modell.
+
+  - id: PB-INC-002
+    version: "1.0"
+    theme: incident_reporting
+    risk_pattern: "Meldepflicht für jedes Security-Event"
+    standard_position: >
+      Meldepflicht gilt für bestätigte Sicherheitsvorfälle mit
+      Auswirkung auf den Auftraggeber. Meldepflicht für jedes
+      Security-Event ohne Schwellenwert ist nicht akzeptabel.
+    alt_wordings:
+      - >
+        Der Auftragnehmer meldet bestätigte Sicherheitsvorfälle,
+        die den Auftraggeber oder dessen Daten betreffen.
+        Sicherheitsereignisse ohne Auswirkung werden intern behandelt.
+    bidder_questions:
+      - "Gibt es einen definierten Schwellenwert für meldepflichtige Vorfälle?"
+      - "Wie wird zwischen Security-Event und meldepflichtigem Vorfall unterschieden?"
+    applicable_when: >
+      Vertrag fordert Meldung aller Security-Events oder nutzt
+      keinen definierten Schwellenwert für die Meldepflicht.
+    escalation_note: null
+
   - id: PB-INC-003
     version: "1.0"
     theme: incident_reporting
@@ -41,3 +125,68 @@ playbook_entries:
     escalation_note: >
       No-Go wenn: Auftragnehmer soll faktisch als verantwortliche
       Stelle gegenüber Aufsichtsbehörden auftreten.
+
+  - id: PB-SLA-001
+    version: "1.0"
+    theme: sla_feasibility
+    risk_pattern: "SLA ohne Wartungsfenster-Ausnahme"
+    standard_position: >
+      Geplante Wartungsfenster sind explizit von der SLA-Messung
+      ausgenommen. SLA ohne Wartungsfenster-Ausnahme ist nicht akzeptabel.
+    alt_wordings:
+      - >
+        Geplante Wartungsarbeiten, die mindestens 5 Werktage vorab
+        angekündigt werden, sind von der Verfügbarkeitsmessung ausgenommen.
+    bidder_questions:
+      - "Sind Wartungsfenster explizit von der SLA-Messung ausgenommen?"
+      - "Wie viel Vorlaufzeit ist für Wartungsankündigungen vorgesehen?"
+    applicable_when: >
+      SLA-Klausel enthält keine explizite Ausnahme für geplante
+      Wartungsfenster oder definiert keine Ankündigungsfrist.
+    escalation_note: null
+
+  - id: PB-SLA-002
+    version: "1.0"
+    theme: sla_feasibility
+    risk_pattern: "Verfügbarkeit >= 99.99% oder Transaktionsmessung"
+    standard_position: >
+      Verfügbarkeit >= 99.99% (entspricht < 53 Minuten Ausfallzeit/Jahr)
+      ist nur im Dedicated-Betrieb mit entsprechender Infrastruktur
+      darstellbar. Transaktionsbasierte Messung erhöht das Risiko
+      erheblich und ist nicht akzeptabel.
+    alt_wordings:
+      - >
+        Die Verfügbarkeit wird auf Basis von Service-Erreichbarkeit
+        gemessen, nicht auf Transaktionsebene. Zielwert max. 99.9%.
+    bidder_questions:
+      - "Wie wird die Verfügbarkeit gemessen (Service vs. Transaktion)?"
+      - "Ist der Zielwert im Shared-Betrieb technisch nachweisbar erreichbar?"
+    applicable_when: >
+      Vertrag fordert Verfügbarkeit >= 99.99% oder sieht
+      transaktionsbasierte Verfügbarkeitsmessung vor.
+    escalation_note: >
+      No-Go wenn: 99.99% im Shared/Multi-Tenant-Betrieb ohne
+      technischen Nachweis der Machbarkeit.
+
+  - id: PB-SLA-003
+    version: "1.0"
+    theme: sla_feasibility
+    risk_pattern: "Keine SLA-Suspension bei DR/BCM"
+    standard_position: >
+      Bei einem ausgerufenen DR- oder BCM-Fall werden SLA-Verpflichtungen
+      für die Dauer des Notfallbetriebs suspendiert. Ohne diese Klausel
+      drohen Vertragsstrafen während eines Notfalls.
+    alt_wordings:
+      - >
+        Im Falle eines ausgerufenen Disaster-Recovery- oder
+        Business-Continuity-Ereignisses werden SLA-Verpflichtungen
+        für die Dauer des Notfallbetriebs ausgesetzt.
+    bidder_questions:
+      - "Gibt es eine explizite SLA-Suspension für den DR/BCM-Fall?"
+      - "Wie wird ein DR/BCM-Fall definiert und ausgerufen?"
+    applicable_when: >
+      Vertrag enthält hohe SLA-Anforderungen (>= 99.5%) ohne
+      explizite Suspension bei DR- oder BCM-Ereignissen.
+    escalation_note: >
+      No-Go wenn: SLA >= 99.5% ohne DR-Suspension bei gleichzeitig
+      fehlendem BCM-Nachweis.
