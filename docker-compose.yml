@@ -26,5 +26,21 @@ services:
       - ./infosec_contract_review/seed:/app/infosec_contract_review/seed:ro
     command: ["bash", "entrypoint.sh"]
 
+  backend:
+    build: .
+    command: uvicorn infosec_contract_review.app:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/contract_review
+      UPLOAD_DIR: /app/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./infosec_contract_review:/app/infosec_contract_review
+      - uploads:/app/uploads
+
 volumes:
   pgdata:
+  uploads:
