@@ -120,6 +120,29 @@ class FindingDetail(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Obligations
+# ---------------------------------------------------------------------------
+
+class ObligationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    segment_id: str
+    theme: str
+    obligation_type: str
+    direction: str
+    summary: str
+    verbatim_quote: str | None
+    materiality: str
+    confidence: str | None
+    run_id: str | None = None
+    lens_config_id: str | None = None
+    extraction_method: str | None = None
+    evidence_segment_ids: list | None = None
+    raw_extraction: dict | None = None
+    created_at: datetime
+
+
+# ---------------------------------------------------------------------------
 # Review
 # ---------------------------------------------------------------------------
 

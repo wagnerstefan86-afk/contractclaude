@@ -27,6 +27,16 @@ class Obligation(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
     confidence: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("analysis_runs.id"), nullable=True, index=True
+    )
+    lens_config_id: Mapped[str | None] = mapped_column(
+        ForeignKey("lens_configs.id"), nullable=True, index=True
+    )
+    extraction_method: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    evidence_segment_ids: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    raw_extraction: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+
     limits: Mapped["ObligationLimits | None"] = relationship(
         back_populates="obligation", cascade="all, delete-orphan", uselist=False
     )

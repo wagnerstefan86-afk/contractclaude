@@ -4,11 +4,13 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
 from infosec_contract_review.core.database import get_db
 from infosec_contract_review.models.package import ContractPackage, Document
 from infosec_contract_review.models.finding import Finding
+from infosec_contract_review.models.obligation import Obligation
 from infosec_contract_review.models.run import AnalysisRun
 from infosec_contract_review.models.segment import Segment
 from infosec_contract_review.models.baseline import ProviderBaseline
@@ -16,6 +18,7 @@ from infosec_contract_review.models.enums import RunStatus
 from infosec_contract_review.schemas.domain import (
     FindingBrief,
     FindingDetail,
+    ObligationOut,
     RunBrief,
     RunDetail,
     SegmentOut,
@@ -161,3 +164,67 @@ def list_segments(
 
     offset = (page - 1) * page_size
     return q.order_by(Segment.document_id, Segment.segment_index).offset(offset).limit(page_size).all()
+
+
+# ---------------------------------------------------------------------------
+# Obligation extraction
+# ---------------------------------------------------------------------------
+
+class ExtractRequest(BaseModel):
+    lens_ids: list[str] | None = None
+
+
+@router.post("/{package_id}/runs/{run_id}/extract")
+def extract_obligations(
+    package_id: str,
+    run_id: str,
+    body: ExtractRequest = ExtractRequest(),
+    db: Session = Depends(get_db),
+):
+    from infosec_contract_review.pipeline.analysis import run_obligation_extraction
+
+    pkg = db.get(ContractPackage, package_id)
+    if not pkg:
+        raise HTTPException(404, f"Package {package_id} not found")
+
+    try:
+        result = run_obligation_extraction(package_id, run_id, body.lens_ids, db)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except RuntimeError as e:
+        raise HTTPException(500, str(e))
+
+    logger.info("Extraction complete for run %s: %d obligations", run_id, result["obligations_extracted"])
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Obligations
+# ---------------------------------------------------------------------------
+
+@router.get("/{package_id}/obligations", response_model=list[ObligationOut])
+def list_obligations(
+    package_id: str,
+    theme: Optional[str] = Query(None),
+    obligation_type: Optional[str] = Query(None),
+    run_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    pkg = db.get(ContractPackage, package_id)
+    if not pkg:
+        raise HTTPException(404, f"Package {package_id} not found")
+
+    run_ids_q = db.query(AnalysisRun.id).filter_by(package_id=package_id)
+    if run_id:
+        run_ids_q = run_ids_q.filter_by(id=run_id)
+    run_ids = [r.id for r in run_ids_q.all()]
+    if not run_ids:
+        return []
+
+    q = db.query(Obligation).filter(Obligation.run_id.in_(run_ids))
+    if theme:
+        q = q.filter(Obligation.theme == theme)
+    if obligation_type:
+        q = q.filter(Obligation.obligation_type == obligation_type)
+
+    return q.order_by(Obligation.created_at.desc()).all()
