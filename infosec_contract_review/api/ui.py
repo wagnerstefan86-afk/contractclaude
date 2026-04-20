@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import logging
 import os
 import pathlib
+import re
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session, joinedload
 
@@ -38,6 +41,7 @@ router = APIRouter(prefix="/ui", tags=["ui"])
 
 TEMPLATES_DIR = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+templates.env.cache = None
 templates.env.globals["theme_label"] = theme_label
 templates.env.globals["status_label"] = status_label
 templates.env.globals["severity_label"] = severity_label
@@ -427,6 +431,160 @@ def findings_list(
 
 
 # ---------------------------------------------------------------------------
+# Findings export (XLSX)
+#
+# NOTE: This route must be registered BEFORE /findings/{finding_id} so that
+# the literal "export.xlsx" path segment isn't matched as a finding_id.
+# ---------------------------------------------------------------------------
+
+_MD_BOLD_RE = re.compile(r"\*\*(.+?)\*\*", re.DOTALL)
+_MD_BULLET_RE = re.compile(r"(?m)^(\s*)-\s+")
+_FILENAME_SANITIZE_RE = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+def _clean_markdown(text: str | None) -> str:
+    if not text:
+        return ""
+    cleaned = _MD_BOLD_RE.sub(r"\1", text)
+    cleaned = _MD_BULLET_RE.sub(r"\1• ", cleaned)
+    return cleaned
+
+
+def _safe_filename_part(value: str) -> str:
+    sanitized = _FILENAME_SANITIZE_RE.sub("_", value).strip("_")
+    return sanitized or "Paket"
+
+
+@router.get("/packages/{package_id}/findings/export.xlsx")
+def export_findings_xlsx(
+    package_id: str,
+    run_id: str = "",
+    db: Session = Depends(get_db),
+):
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font, PatternFill
+
+    pkg = db.query(ContractPackage).filter_by(id=package_id).first()
+    if not pkg:
+        return HTMLResponse("<h1>Paket nicht gefunden</h1>", status_code=404)
+
+    if run_id:
+        run = db.query(AnalysisRun).filter_by(id=run_id, package_id=package_id).first()
+    else:
+        run = (
+            db.query(AnalysisRun)
+            .filter_by(package_id=package_id)
+            .order_by(AnalysisRun.created_at.desc())
+            .first()
+        )
+
+    findings = []
+    if run:
+        findings = (
+            db.query(Finding)
+            .options(
+                joinedload(Finding.evidences),
+                joinedload(Finding.missing_safeguards),
+            )
+            .filter_by(run_id=run.id)
+            .order_by(Finding.created_at.desc())
+            .all()
+        )
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Findings"
+
+    headers = [
+        "Nr.",
+        "Thema",
+        "Titel",
+        "Schweregrad",
+        "Materialität",
+        "Status",
+        "Beschreibung",
+        "Empfehlung",
+        "Evidenzen",
+        "Fehlende Schutzmechanismen",
+        "Playbook-ID",
+        "Erstellt am",
+    ]
+    ws.append(headers)
+
+    header_font = Font(bold=True)
+    header_fill = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
+    header_align = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    for col_idx in range(1, len(headers) + 1):
+        cell = ws.cell(row=1, column=col_idx)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_align
+
+    column_widths = {
+        "A": 6,
+        "B": 28,
+        "C": 40,
+        "D": 15,
+        "E": 15,
+        "F": 15,
+        "G": 60,
+        "H": 60,
+        "I": 60,
+        "J": 30,
+        "K": 20,
+        "L": 20,
+    }
+    for col_letter, width in column_widths.items():
+        ws.column_dimensions[col_letter].width = width
+
+    wrap_align = Alignment(vertical="top", wrap_text=True)
+
+    for idx, f in enumerate(findings, start=1):
+        evidences_text = "\n---\n".join(
+            (e.quote or "").strip() for e in f.evidences if (e.quote or "").strip()
+        )
+        missing_text = ", ".join(
+            (ms.label or ms.safeguard_key) for ms in f.missing_safeguards
+        )
+        created_at = f.created_at.strftime("%d.%m.%Y %H:%M") if f.created_at else ""
+
+        row = [
+            idx,
+            theme_label(f.theme),
+            f.title or "",
+            severity_label(f.severity),
+            materiality_label(f.materiality),
+            status_label(f.status),
+            _clean_markdown(f.description),
+            _clean_markdown(f.recommendation),
+            evidences_text,
+            missing_text,
+            f.playbook_entry_id or "",
+            created_at,
+        ]
+        ws.append(row)
+
+        row_num = idx + 1
+        for col_idx in range(1, len(headers) + 1):
+            ws.cell(row=row_num, column=col_idx).alignment = wrap_align
+
+    ws.freeze_panes = "A2"
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"{_safe_filename_part(pkg.name)}_Findings_{date_str}.xlsx"
+
+    return Response(
+        content=buffer.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+# ---------------------------------------------------------------------------
 # Finding detail
 # ---------------------------------------------------------------------------
 
@@ -500,3 +658,4 @@ def submit_review(
         url=f"/ui/packages/{package_id}/findings/{finding_id}?review_saved=1",
         status_code=303,
     )
+

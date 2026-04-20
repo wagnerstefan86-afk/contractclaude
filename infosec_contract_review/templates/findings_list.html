@@ -52,7 +52,12 @@
     </div>
 </form>
 
-<div class="mb-2 text-muted">{{ findings|length }} Findings</div>
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="text-muted">{{ findings|length }} Findings</span>
+    <a href="/ui/packages/{{ package_id }}/findings/export.xlsx" class="btn btn-sm btn-outline-success">
+        Findings als Excel exportieren
+    </a>
+</div>
 
 {% if findings %}
 <table class="table table-hover table-sm">
