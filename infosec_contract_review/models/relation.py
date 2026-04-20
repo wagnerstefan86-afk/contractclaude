@@ -1,4 +1,5 @@
 from sqlalchemy import Enum, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from .base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 from .enums import Materiality, RelationType, Theme
@@ -18,6 +19,9 @@ class ObligationRelation(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
     rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
     confidence: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("analysis_runs.id"), nullable=True, index=True
+    )
 
 
 class CrossThemeFindingCandidate(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -35,3 +39,5 @@ class CrossThemeFindingCandidate(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     materiality: Mapped[Materiality] = mapped_column(
         Enum(Materiality, native_enum=False, length=10), nullable=False
     )
+    obligation_ids_theme_a: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    obligation_ids_theme_b: Mapped[list | None] = mapped_column(JSONB, nullable=True)

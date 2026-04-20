@@ -334,3 +334,33 @@ class BaselineOut(BaseModel):
     certifications: list[CertificationOut]
     standard_positions: list[StandardPositionOut]
     service_profiles: list[ServiceProfileOut]
+
+
+# ---------------------------------------------------------------------------
+# Relations and Cross-Theme
+# ---------------------------------------------------------------------------
+
+class ObligationRelationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    obligation_a_id: str
+    obligation_b_id: str
+    relation_type: str
+    rationale: str | None
+    confidence: str | None
+    run_id: str | None = None
+    created_at: datetime
+
+
+class CrossThemeCandidateOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    rule_id: str
+    run_id: str
+    result: str
+    rationale: str | None
+    confidence: str | None
+    materiality: str
+    obligation_ids_theme_a: list | None = None
+    obligation_ids_theme_b: list | None = None
+    created_at: datetime

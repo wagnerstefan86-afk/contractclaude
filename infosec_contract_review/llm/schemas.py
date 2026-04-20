@@ -1,4 +1,4 @@
-"""JSON schema for Structured Outputs: obligation extraction."""
+"""JSON schemas for Structured Outputs: obligation extraction, relations, cross-theme."""
 
 OBLIGATION_SCHEMA = {
     "name": "obligations_extraction",
@@ -86,6 +86,76 @@ OBLIGATION_SCHEMA = {
             },
         },
         "required": ["obligations"],
+        "additionalProperties": False,
+    },
+}
+
+
+RELATION_SCHEMA = {
+    "name": "obligation_relations",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "relations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "source_obligation_id": {"type": "string"},
+                        "target_obligation_id": {"type": "string"},
+                        "relation_type": {
+                            "type": "string",
+                            "enum": ["contradicts", "supplements", "overrides", "duplicates"],
+                        },
+                        "rationale": {"type": "string"},
+                        "confidence": {
+                            "type": "string",
+                            "enum": ["high", "medium", "low"],
+                        },
+                    },
+                    "required": [
+                        "source_obligation_id", "target_obligation_id",
+                        "relation_type", "rationale", "confidence",
+                    ],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["relations"],
+        "additionalProperties": False,
+    },
+}
+
+
+CROSS_THEME_SCHEMA = {
+    "name": "cross_theme_check",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "result": {
+                "type": "string",
+                "enum": ["conflict_found", "no_conflict", "unclear"],
+            },
+            "rationale": {"type": "string"},
+            "confidence": {
+                "type": "string",
+                "enum": ["high", "medium", "low"],
+            },
+            "involved_obligation_ids_a": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+            "involved_obligation_ids_b": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        "required": [
+            "result", "rationale", "confidence",
+            "involved_obligation_ids_a", "involved_obligation_ids_b",
+        ],
         "additionalProperties": False,
     },
 }

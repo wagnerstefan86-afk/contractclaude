@@ -109,5 +109,6 @@ class StepType(str, enum.Enum):
     SEGMENTATION = "segmentation"
     ROUTING = "routing"
     LENS_ANALYSIS = "lens_analysis"
+    RELATION_DETECTION = "relation_detection"
     CROSS_THEME = "cross_theme"
     AGGREGATION = "aggregation"

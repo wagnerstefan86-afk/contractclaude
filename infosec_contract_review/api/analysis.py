@@ -11,15 +11,18 @@ from infosec_contract_review.core.database import get_db
 from infosec_contract_review.models.package import ContractPackage, Document
 from infosec_contract_review.models.finding import Finding, MissingSafeguard
 from infosec_contract_review.models.obligation import Obligation
+from infosec_contract_review.models.relation import ObligationRelation, CrossThemeFindingCandidate
 from infosec_contract_review.models.run import AnalysisRun
 from infosec_contract_review.models.segment import Segment
 from infosec_contract_review.models.baseline import ProviderBaseline
 from infosec_contract_review.models.enums import RunStatus
 from infosec_contract_review.schemas.domain import (
+    CrossThemeCandidateOut,
     FindingBrief,
     FindingDetail,
     MissingSafeguardDetailOut,
     ObligationOut,
+    ObligationRelationOut,
     RunBrief,
     RunDetail,
     SegmentOut,
@@ -267,3 +270,75 @@ def list_missing_safeguards(
             return []
 
     return q.order_by(MissingSafeguard.created_at.desc()).all()
+
+
+# ---------------------------------------------------------------------------
+# Relations
+# ---------------------------------------------------------------------------
+
+@router.get("/{package_id}/relations", response_model=list[ObligationRelationOut])
+def list_relations(
+    package_id: str,
+    run_id: Optional[str] = Query(None),
+    theme: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    pkg = db.get(ContractPackage, package_id)
+    if not pkg:
+        raise HTTPException(404, f"Package {package_id} not found")
+
+    run_ids_q = db.query(AnalysisRun.id).filter_by(package_id=package_id)
+    if run_id:
+        run_ids_q = run_ids_q.filter_by(id=run_id)
+    run_ids = [r.id for r in run_ids_q.all()]
+    if not run_ids:
+        return []
+
+    q = db.query(ObligationRelation).filter(ObligationRelation.run_id.in_(run_ids))
+
+    if theme:
+        obl_ids = [
+            o.id for o in
+            db.query(Obligation.id).filter(
+                Obligation.run_id.in_(run_ids),
+                Obligation.theme == theme,
+            ).all()
+        ]
+        if obl_ids:
+            q = q.filter(
+                (ObligationRelation.obligation_a_id.in_(obl_ids)) |
+                (ObligationRelation.obligation_b_id.in_(obl_ids))
+            )
+        else:
+            return []
+
+    return q.order_by(ObligationRelation.created_at.desc()).all()
+
+
+# ---------------------------------------------------------------------------
+# Cross-Theme Candidates
+# ---------------------------------------------------------------------------
+
+@router.get("/{package_id}/cross-theme-candidates", response_model=list[CrossThemeCandidateOut])
+def list_cross_theme_candidates(
+    package_id: str,
+    run_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    pkg = db.get(ContractPackage, package_id)
+    if not pkg:
+        raise HTTPException(404, f"Package {package_id} not found")
+
+    run_ids_q = db.query(AnalysisRun.id).filter_by(package_id=package_id)
+    if run_id:
+        run_ids_q = run_ids_q.filter_by(id=run_id)
+    run_ids = [r.id for r in run_ids_q.all()]
+    if not run_ids:
+        return []
+
+    return (
+        db.query(CrossThemeFindingCandidate)
+        .filter(CrossThemeFindingCandidate.run_id.in_(run_ids))
+        .order_by(CrossThemeFindingCandidate.created_at.desc())
+        .all()
+    )
