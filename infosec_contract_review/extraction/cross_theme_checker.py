@@ -33,16 +33,21 @@ def _build_cross_theme_prompt(
     obligations_a: list[Obligation],
     obligations_b: list[Obligation],
 ) -> str:
+    theme_a_val = rule.theme_a.value if hasattr(rule.theme_a, "value") else str(rule.theme_a)
+    theme_b_val = rule.theme_b.value if hasattr(rule.theme_b, "value") else str(rule.theme_b)
+
     parts = [
-        f"Regel: {rule.name}\n",
-        f"Theme A ({rule.theme_a.value}):\n",
+        f"Prüfe den folgenden Cross-Theme-Konflikt.\n\n",
+        f'Obligations zum Thema "{theme_a_val}":\n',
     ]
     for obl in obligations_a:
         parts.append(f"  [OBL-ID: {obl.id}] {obl.summary}\n")
 
-    parts.append(f"\nTheme B ({rule.theme_b.value}):\n")
+    parts.append(f'\nObligations zum Thema "{theme_b_val}":\n')
     for obl in obligations_b:
         parts.append(f"  [OBL-ID: {obl.id}] {obl.summary}\n")
+
+    parts.append(f"\nTrigger-Kontext: {rule.trigger_condition}\n")
 
     return "".join(parts)
 

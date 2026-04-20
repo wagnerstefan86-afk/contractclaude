@@ -106,7 +106,7 @@ RELATION_SCHEMA = {
                         "target_obligation_id": {"type": "string"},
                         "relation_type": {
                             "type": "string",
-                            "enum": ["contradicts", "supplements", "overrides", "duplicates"],
+                            "enum": ["supplements", "tightens", "contradicts", "specifies", "references"],
                         },
                         "rationale": {"type": "string"},
                         "confidence": {

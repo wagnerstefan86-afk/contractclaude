@@ -74,6 +74,9 @@ class RelationType(str, enum.Enum):
     SUPPLEMENTS = "supplements"
     OVERRIDES = "overrides"
     DUPLICATES = "duplicates"
+    TIGHTENS = "tightens"
+    SPECIFIES = "specifies"
+    REFERENCES = "references"
 
 
 class FindingSeverity(str, enum.Enum):
