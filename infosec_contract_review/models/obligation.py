@@ -36,6 +36,8 @@ class Obligation(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     extraction_method: Mapped[str | None] = mapped_column(String(20), nullable=True)
     evidence_segment_ids: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     raw_extraction: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    baseline_match_status: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    baseline_gap_description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     limits: Mapped["ObligationLimits | None"] = relationship(
         back_populates="obligation", cascade="all, delete-orphan", uselist=False

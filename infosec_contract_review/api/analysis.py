@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from infosec_contract_review.core.database import get_db
 from infosec_contract_review.models.package import ContractPackage, Document
-from infosec_contract_review.models.finding import Finding
+from infosec_contract_review.models.finding import Finding, MissingSafeguard
 from infosec_contract_review.models.obligation import Obligation
 from infosec_contract_review.models.run import AnalysisRun
 from infosec_contract_review.models.segment import Segment
@@ -18,6 +18,7 @@ from infosec_contract_review.models.enums import RunStatus
 from infosec_contract_review.schemas.domain import (
     FindingBrief,
     FindingDetail,
+    MissingSafeguardDetailOut,
     ObligationOut,
     RunBrief,
     RunDetail,
@@ -228,3 +229,41 @@ def list_obligations(
         q = q.filter(Obligation.obligation_type == obligation_type)
 
     return q.order_by(Obligation.created_at.desc()).all()
+
+
+# ---------------------------------------------------------------------------
+# Missing Safeguards
+# ---------------------------------------------------------------------------
+
+@router.get("/{package_id}/missing-safeguards", response_model=list[MissingSafeguardDetailOut])
+def list_missing_safeguards(
+    package_id: str,
+    theme: Optional[str] = Query(None),
+    run_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    pkg = db.get(ContractPackage, package_id)
+    if not pkg:
+        raise HTTPException(404, f"Package {package_id} not found")
+
+    run_ids_q = db.query(AnalysisRun.id).filter_by(package_id=package_id)
+    if run_id:
+        run_ids_q = run_ids_q.filter_by(id=run_id)
+    run_ids = [r.id for r in run_ids_q.all()]
+    if not run_ids:
+        return []
+
+    q = db.query(MissingSafeguard).filter(MissingSafeguard.run_id.in_(run_ids))
+
+    if theme:
+        from infosec_contract_review.models.config import LensConfig
+        lens_ids = [
+            lc.id for lc in
+            db.query(LensConfig).filter(LensConfig.theme == theme).all()
+        ]
+        if lens_ids:
+            q = q.filter(MissingSafeguard.lens_config_id.in_(lens_ids))
+        else:
+            return []
+
+    return q.order_by(MissingSafeguard.created_at.desc()).all()

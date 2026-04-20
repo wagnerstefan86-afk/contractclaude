@@ -1,12 +1,15 @@
-"""Analysis pipeline: runs obligation extraction across lenses."""
+"""Analysis pipeline: runs obligation extraction, safeguard check, baseline match."""
 from __future__ import annotations
 
 import logging
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
+from infosec_contract_review.extraction.baseline_matcher import match_obligation_to_baseline
 from infosec_contract_review.extraction.obligation_extractor import extract_obligations_for_lens
+from infosec_contract_review.extraction.safeguard_checker import check_missing_safeguards
 from infosec_contract_review.llm.client import LLMClient
+from infosec_contract_review.models.baseline import ProviderBaseline
 from infosec_contract_review.models.config import LensConfig
 from infosec_contract_review.models.enums import RunStatus
 from infosec_contract_review.models.obligation import Obligation
@@ -49,14 +52,31 @@ def run_obligation_extraction(
     if lens_ids:
         lenses = (
             db.query(LensConfig)
+            .options(joinedload(LensConfig.expected_safeguards))
             .filter(LensConfig.lens_id.in_(lens_ids), LensConfig.is_active == True)
             .all()
         )
     else:
-        lenses = db.query(LensConfig).filter_by(is_active=True).all()
+        lenses = (
+            db.query(LensConfig)
+            .options(joinedload(LensConfig.expected_safeguards))
+            .filter_by(is_active=True)
+            .all()
+        )
 
     if not lenses:
         raise ValueError("No active lens configurations found")
+
+    baseline = (
+        db.query(ProviderBaseline)
+        .options(
+            joinedload(ProviderBaseline.standard_positions),
+            joinedload(ProviderBaseline.certifications),
+            joinedload(ProviderBaseline.service_profiles),
+        )
+        .filter_by(is_active=True)
+        .first()
+    )
 
     run.status = RunStatus.RUNNING
     prompt_versions = {}
@@ -66,6 +86,9 @@ def run_obligation_extraction(
     total_obligations = 0
     total_tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
     total_errors = 0
+    total_missing_safeguards = 0
+    total_not_automatable = 0
+    total_baseline_summary = {"already_supported": 0, "partially_supported": 0, "not_supported": 0}
     lens_results = []
 
     for step_idx, lens in enumerate(lenses):
@@ -93,12 +116,41 @@ def run_obligation_extraction(
             total_tokens[k] += result.token_usage.get(k, 0)
         total_errors += result.errors
 
+        # Baseline match for extracted obligations
+        lens_obligations = (
+            db.query(Obligation)
+            .options(joinedload(Obligation.limits))
+            .filter_by(run_id=run_id, lens_config_id=lens.id)
+            .all()
+        )
+
+        baseline_summary = {"already_supported": 0, "partially_supported": 0, "not_supported": 0}
+        if baseline and lens_obligations:
+            for obl in lens_obligations:
+                status, desc = match_obligation_to_baseline(obl, baseline)
+                obl.baseline_match_status = status
+                obl.baseline_gap_description = desc
+                baseline_summary[status] = baseline_summary.get(status, 0) + 1
+            db.flush()
+
+        for k in baseline_summary:
+            total_baseline_summary[k] += baseline_summary[k]
+
+        # MissingSafeguard check
+        sg_result = check_missing_safeguards(lens, lens_obligations, run_id, db)
+
+        total_missing_safeguards += sg_result["created"]
+        total_not_automatable += sg_result["skipped_not_automatable"]
+
         lens_results.append({
             "lens_id": lens.lens_id,
             "obligations": result.obligations_count,
             "skipped_low_confidence": result.skipped_low_confidence,
             "skipped_invalid_evidence": result.skipped_invalid_evidence,
             "errors": result.errors,
+            "missing_safeguards_count": sg_result["created"],
+            "not_automatable_safeguards_count": sg_result["skipped_not_automatable"],
+            "baseline_match_summary": baseline_summary,
         })
 
     run.status = RunStatus.COMPLETED if total_errors == 0 else RunStatus.FAILED
@@ -115,6 +167,9 @@ def run_obligation_extraction(
         "run_id": run_id,
         "status": run.status.value,
         "obligations_extracted": total_obligations,
+        "missing_safeguards_total": total_missing_safeguards,
+        "not_automatable_safeguards_total": total_not_automatable,
+        "baseline_match_summary": total_baseline_summary,
         "tokens_used": total_tokens,
         "errors": total_errors,
         "lenses": lens_results,

@@ -89,6 +89,20 @@ class MissingSafeguardOut(BaseModel):
     explanation: str | None
 
 
+class MissingSafeguardDetailOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    finding_id: str | None = None
+    run_id: str | None = None
+    lens_config_id: str | None = None
+    obligation_id: str | None = None
+    safeguard_key: str
+    label: str
+    explanation: str | None
+    status: str = "missing"
+    created_at: datetime
+
+
 class FindingBrief(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
@@ -139,6 +153,8 @@ class ObligationOut(BaseModel):
     extraction_method: str | None = None
     evidence_segment_ids: list | None = None
     raw_extraction: dict | None = None
+    baseline_match_status: str | None = None
+    baseline_gap_description: str | None = None
     created_at: datetime
 
 

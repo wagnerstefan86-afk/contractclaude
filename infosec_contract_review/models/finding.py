@@ -34,7 +34,8 @@ class Finding(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         back_populates="finding", cascade="all, delete-orphan"
     )
     missing_safeguards: Mapped[list["MissingSafeguard"]] = relationship(
-        back_populates="finding", cascade="all, delete-orphan"
+        back_populates="finding", cascade="all, delete-orphan",
+        foreign_keys="MissingSafeguard.finding_id",
     )
     review_decision: Mapped["ReviewDecision | None"] = relationship(
         back_populates="finding", cascade="all, delete-orphan", uselist=False
@@ -62,14 +63,29 @@ class Evidence(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 class MissingSafeguard(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "missing_safeguards"
 
-    finding_id: Mapped[str] = mapped_column(
-        ForeignKey("findings.id"), nullable=False, index=True
+    finding_id: Mapped[str | None] = mapped_column(
+        ForeignKey("findings.id"), nullable=True, index=True
+    )
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("analysis_runs.id"), nullable=True, index=True
+    )
+    lens_config_id: Mapped[str | None] = mapped_column(
+        ForeignKey("lens_configs.id"), nullable=True, index=True
+    )
+    obligation_id: Mapped[str | None] = mapped_column(
+        ForeignKey("obligations.id"), nullable=True
     )
     safeguard_key: Mapped[str] = mapped_column(String(100), nullable=False)
     label: Mapped[str] = mapped_column(String(300), nullable=False)
     explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="missing", server_default="missing"
+    )
 
-    finding: Mapped["Finding"] = relationship(back_populates="missing_safeguards")
+    finding: Mapped["Finding | None"] = relationship(
+        back_populates="missing_safeguards",
+        foreign_keys=[finding_id],
+    )
 
 
 class ReviewDecision(Base, UUIDPrimaryKeyMixin, TimestampMixin):
