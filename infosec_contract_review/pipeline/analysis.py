@@ -14,6 +14,7 @@ from infosec_contract_review.llm.client import LLMClient
 from infosec_contract_review.models.baseline import ProviderBaseline
 from infosec_contract_review.models.config import CrossThemeRule, LensConfig
 from infosec_contract_review.models.enums import RunStatus
+from infosec_contract_review.models.finding import Finding
 from infosec_contract_review.models.obligation import Obligation
 from infosec_contract_review.models.package import ContractPackage
 from infosec_contract_review.models.run import AnalysisRun
@@ -212,6 +213,24 @@ def run_obligation_extraction(
             total_errors += 1
             step_counter += 1
 
+    # --- Phase 5: Finding generation ---
+    total_findings = 0
+    total_playbook_matches = 0
+
+    existing_findings = db.query(Finding).filter_by(run_id=run_id).count()
+    if existing_findings == 0 and total_obligations > 0:
+        from infosec_contract_review.scoring.finding_generator import generate_findings
+        try:
+            fg_result = generate_findings(run_id, db, step_counter)
+            step_counter += 1
+            total_findings = fg_result.findings_created
+            total_playbook_matches = fg_result.playbook_matches
+            total_errors += fg_result.errors
+        except Exception as e:
+            logger.exception("Finding generation failed")
+            total_errors += 1
+            step_counter += 1
+
     run.status = RunStatus.COMPLETED if total_errors == 0 else RunStatus.FAILED
     if run.config_snapshot:
         run.config_snapshot = {
@@ -226,6 +245,8 @@ def run_obligation_extraction(
         "run_id": run_id,
         "status": run.status.value,
         "obligations_extracted": total_obligations,
+        "findings_generated": total_findings,
+        "playbook_matches": total_playbook_matches,
         "relations_count": total_relations,
         "cross_theme_candidates_count": cross_theme_candidates,
         "cross_theme_rules_skipped": cross_theme_skipped,

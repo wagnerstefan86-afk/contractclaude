@@ -112,6 +112,7 @@ class FindingBrief(BaseModel):
     severity: str
     materiality: str
     status: str
+    playbook_entry_id: str | None = None
     created_at: datetime
 
 
