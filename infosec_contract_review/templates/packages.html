@@ -1,13 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Packages – InfoSec Contract Review{% endblock %}
+{% block title %}Vertragspakete – InfoSec Contract Review{% endblock %}
 {% block content %}
-<h2>Vertragspakete</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Vertragspakete</h2>
+    <a href="/ui/packages/new" class="btn btn-primary">+ Neues Vertragspaket anlegen</a>
+</div>
 {% if packages %}
 <table class="table table-hover">
     <thead>
         <tr>
             <th>Name</th>
             <th>Dokumente</th>
+            <th>Status</th>
+            <th>Letzte Analyse</th>
+            <th>Findings</th>
             <th>Erstellt</th>
             <th></th>
         </tr>
@@ -15,15 +21,18 @@
     <tbody>
         {% for pkg in packages %}
         <tr>
-            <td>{{ pkg.name }}</td>
+            <td><a href="/ui/packages/{{ pkg.id }}">{{ pkg.name }}</a></td>
             <td>{{ pkg.document_count }}</td>
+            <td>{{ pkg.status }}</td>
+            <td>{% if pkg.last_run %}{{ pkg.last_run.strftime('%d.%m.%Y %H:%M') }}{% else %}–{% endif %}</td>
+            <td>{{ pkg.findings_count }}</td>
             <td>{{ pkg.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
-            <td><a href="/ui/packages/{{ pkg.id }}/findings" class="btn btn-sm btn-primary">Findings</a></td>
+            <td><a href="/ui/packages/{{ pkg.id }}" class="btn btn-sm btn-outline-primary">Öffnen</a></td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 {% else %}
-<div class="alert alert-info">Keine Pakete vorhanden.</div>
+<div class="alert alert-info">Keine Pakete vorhanden. Legen Sie ein neues Vertragspaket an.</div>
 {% endif %}
 {% endblock %}

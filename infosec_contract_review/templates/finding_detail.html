@@ -4,8 +4,9 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/ui/">Pakete</a></li>
-        <li class="breadcrumb-item"><a href="/ui/packages/{{ package_id }}/findings">{{ package_name }}</a></li>
-        <li class="breadcrumb-item active">Finding</li>
+        <li class="breadcrumb-item"><a href="/ui/packages/{{ package_id }}">{{ package_name }}</a></li>
+        <li class="breadcrumb-item"><a href="/ui/packages/{{ package_id }}/findings">Findings</a></li>
+        <li class="breadcrumb-item active">Detail</li>
     </ol>
 </nav>
 
@@ -13,10 +14,10 @@
     <div class="card-body">
         <h4>{{ finding.title }}</h4>
         <div class="row mb-2">
-            <div class="col-auto"><strong>Theme:</strong> {{ finding.theme }}</div>
-            <div class="col-auto"><strong>Severity:</strong> <span class="severity-{{ finding.severity }}">{{ finding.severity }}</span></div>
-            <div class="col-auto"><strong>Materiality:</strong> {{ finding.materiality }}</div>
-            <div class="col-auto"><strong>Status:</strong> <span class="badge bg-secondary">{{ finding.status }}</span></div>
+            <div class="col-auto"><strong>Thema:</strong> {{ theme_label(finding.theme) }}</div>
+            <div class="col-auto"><strong>Schweregrad:</strong> <span class="severity-{{ finding.severity }}">{{ severity_label(finding.severity) }}</span></div>
+            <div class="col-auto"><strong>Materialität:</strong> {{ materiality_label(finding.materiality) }}</div>
+            <div class="col-auto"><strong>Status:</strong> <span class="badge bg-secondary">{{ status_label(finding.status) }}</span></div>
         </div>
     </div>
 </div>
@@ -45,7 +46,7 @@
         <div class="card evidence-card p-2 mb-2">
             {% if ev.quote %}<div><em>„{{ ev.quote[:300] }}{% if ev.quote|length > 300 %}…{% endif %}"</em></div>{% endif %}
             {% if ev.rationale %}<div class="text-muted small">{{ ev.rationale[:200] }}</div>{% endif %}
-            {% if ev.segment_id %}<div class="text-muted small">Segment: {{ ev.segment_id[:12] }}…</div>{% endif %}
+            {% if ev.segment_id %}<div class="text-muted small">Segment: {{ short_id(ev.segment_id) }}</div>{% endif %}
         </div>
         {% endfor %}
     </div>
