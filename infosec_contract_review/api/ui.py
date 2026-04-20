@@ -41,6 +41,8 @@ router = APIRouter(prefix="/ui", tags=["ui"])
 
 TEMPLATES_DIR = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+templates.env.auto_reload = True
+templates.env.cache = None
 templates.env.cache = None
 templates.env.globals["theme_label"] = theme_label
 templates.env.globals["status_label"] = status_label
@@ -125,10 +127,7 @@ def packages_list(request: Request, db: Session = Depends(get_db)):
             "findings_count": findings_count,
             "created_at": pkg.created_at,
         })
-    return templates.TemplateResponse("packages.html", {
-        "request": request,
-        "packages": pkg_data,
-    })
+    return templates.TemplateResponse(request=request, name="packages.html", context={"packages": pkg_data})
 
 
 # ---------------------------------------------------------------------------
@@ -137,7 +136,7 @@ def packages_list(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/packages/new", response_class=HTMLResponse)
 def new_package_form(request: Request):
-    return templates.TemplateResponse("package_new.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="package_new.html", context={})
 
 
 @router.post("/packages/new")
@@ -220,9 +219,7 @@ def package_detail(
 
     customer_name = (pkg.metadata_ or {}).get("customer_name", "") if pkg.metadata_ else ""
 
-    return templates.TemplateResponse("package_detail.html", {
-        "request": request,
-        "pkg": {
+    return templates.TemplateResponse(request=request, name="package_detail.html", context={"pkg": {
             "id": pkg.id,
             "name": pkg.name,
             "description": pkg.description,
@@ -236,8 +233,7 @@ def package_detail(
         "has_parsed": has_parsed,
         "has_running": running_run is not None,
         "run_summary": run_summary,
-        "msg": msg,
-    })
+        "msg": msg})
 
 
 # ---------------------------------------------------------------------------
@@ -416,9 +412,7 @@ def findings_list(
             "created_at": f.created_at,
         })
 
-    return templates.TemplateResponse("findings_list.html", {
-        "request": request,
-        "package_id": package_id,
+    return templates.TemplateResponse(request=request, name="findings_list.html", context={"package_id": package_id,
         "package_name": pkg.name,
         "findings": finding_data,
         "themes": all_themes,
@@ -426,8 +420,7 @@ def findings_list(
         "filter_severity": severity,
         "filter_materiality": materiality,
         "filter_status": status,
-        "search_q": q,
-    })
+        "search_q": q})
 
 
 # ---------------------------------------------------------------------------
@@ -621,15 +614,12 @@ def finding_detail(
         "playbook_entry_id": finding.playbook_entry_id,
     }
 
-    return templates.TemplateResponse("finding_detail.html", {
-        "request": request,
-        "package_id": package_id,
+    return templates.TemplateResponse(request=request, name="finding_detail.html", context={"package_id": package_id,
         "package_name": pkg.name,
         "finding": finding_dict,
         "evidences": finding.evidences,
         "missing_safeguards": finding.missing_safeguards,
-        "review_saved": bool(review_saved),
-    })
+        "review_saved": bool(review_saved)})
 
 
 # ---------------------------------------------------------------------------

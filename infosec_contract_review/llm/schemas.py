@@ -58,13 +58,20 @@ OBLIGATION_SCHEMA = {
                             "additionalProperties": False,
                         },
                         "time_constraint": {
-                            "type": ["object", "null"],
-                            "properties": {
-                                "type": {"type": "string"},
-                                "value": {"type": "string"},
-                                "normalized_hours": {"type": ["number", "null"]},
-                                "is_explicit": {"type": "boolean"},
-                            },
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "constraint_type": {"type": "string"},
+                                        "value": {"type": "string"},
+                                        "normalized_hours": {"type": ["number", "null"]},
+                                        "is_explicit": {"type": "boolean"},
+                                    },
+                                    "required": ["constraint_type", "value", "normalized_hours", "is_explicit"],
+                                    "additionalProperties": False,
+                                },
+                                {"type": "null"},
+                            ],
                         },
                         "evidence_segment_ids": {
                             "type": "array",
