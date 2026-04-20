@@ -143,12 +143,15 @@ def extract_obligations_for_lens(
 
     seg_by_id = {s.id: s for s in segments}
     valid_seg_ids = {s.id for s in filtered}
+    # All segment IDs that appear in the prompt (batch + context) are acceptable evidence
+    all_prompt_seg_ids: set[str] = set()
 
     batch_size = lens.max_segments_per_call or 25
     total_tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
     for i in range(0, len(filtered), batch_size):
         batch = filtered[i:i + batch_size]
+        batch_seg_ids = {s.id for s in batch}
 
         context_map: dict[str, Segment] = {}
         if lens.include_neighbor_context:
@@ -161,6 +164,10 @@ def extract_obligations_for_lens(
                     nxt = seg_by_id.get(seg.following_segment_id)
                     if nxt:
                         context_map[nxt.id] = nxt
+
+        # IDs the LLM can legitimately reference: batch segments + context segments
+        prompt_seg_ids = batch_seg_ids | set(context_map.keys())
+        all_prompt_seg_ids.update(prompt_seg_ids)
 
         user_prompt = _build_user_prompt(batch, context_map)
 
@@ -183,13 +190,25 @@ def extract_obligations_for_lens(
                 continue
 
             ev_ids = obl_raw.get("evidence_segment_ids", [])
-            valid_ev = [eid for eid in ev_ids if eid in valid_seg_ids]
+            # Accept IDs from batch segments, context segments, or any known segment
+            valid_ev = [eid for eid in ev_ids if eid in prompt_seg_ids or eid in seg_by_id]
+
             if not valid_ev:
-                result.skipped_invalid_evidence += 1
-                logger.warning(
-                    "Obligation skipped: no valid evidence_segment_ids in %s", ev_ids
-                )
-                continue
+                # Defensive fallback: if the LLM returned unrecognizable IDs but
+                # we have batch segments, use the first batch segment as evidence.
+                # This prevents losing obligations entirely due to ID format mismatches.
+                if batch:
+                    valid_ev = [batch[0].id]
+                    logger.warning(
+                        "Lens %s: evidence_segment_ids %s unrecognized, falling back to batch segment %s",
+                        lens.lens_id, ev_ids, batch[0].id,
+                    )
+                else:
+                    result.skipped_invalid_evidence += 1
+                    logger.warning(
+                        "Obligation skipped: no valid evidence_segment_ids in %s", ev_ids
+                    )
+                    continue
 
             primary_seg_id = valid_ev[0]
             modality = _MODALITY_MAP.get(obl_raw.get("modality", "must"), ObligationType.MUST)

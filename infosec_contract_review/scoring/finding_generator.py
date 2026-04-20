@@ -57,28 +57,74 @@ class FindingGenerationResult:
     errors: int = 0
 
 
+_GROUPABLE_RELATION_TYPES = {"supplements", "specifies", "references", "tightens"}
+
+
+def _build_connected_components(
+    obligations: list[Obligation],
+    relations: list[ObligationRelation],
+) -> list[list[Obligation]]:
+    """Group obligations into connected components via groupable relations.
+
+    Two obligations end up in the same component if they are connected
+    (directly or transitively) by a relation whose type is in
+    _GROUPABLE_RELATION_TYPES. 'contradicts' is intentionally excluded
+    because contradicting obligations should appear as separate findings.
+    """
+    obl_ids = {o.id for o in obligations}
+    parent: dict[str, str] = {o.id: o.id for o in obligations}
+
+    def find(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a: str, b: str) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    for rel in relations:
+        rel_type = rel.relation_type.value if hasattr(rel.relation_type, "value") else str(rel.relation_type)
+        if rel_type not in _GROUPABLE_RELATION_TYPES:
+            continue
+        a_id = rel.obligation_a_id
+        b_id = rel.obligation_b_id
+        if a_id in obl_ids and b_id in obl_ids:
+            union(a_id, b_id)
+
+    components: dict[str, list[Obligation]] = {}
+    for obl in obligations:
+        root = find(obl.id)
+        components.setdefault(root, []).append(obl)
+
+    return list(components.values())
+
+
 def _group_obligations_by_risk(
     obligations: list[Obligation],
     playbook_entries: list[PlaybookEntry],
+    relations: list[ObligationRelation],
 ) -> list[tuple[list[Obligation], PlaybookEntry | None]]:
-    """Group obligations that share a playbook match. Ungrouped obligations get individual findings."""
-    pb_groups: dict[str, tuple[list[Obligation], PlaybookEntry]] = {}
-    ungrouped: list[Obligation] = []
+    """Group obligations by connected components (via relations) then by playbook match.
 
-    for obl in obligations:
-        match = match_obligation_to_playbook(obl, playbook_entries)
-        if match:
-            if match.id not in pb_groups:
-                pb_groups[match.id] = ([], match)
-            pb_groups[match.id][0].append(obl)
-        else:
-            ungrouped.append(obl)
+    Grouping priority:
+    1. Connected components via supplements/specifies/references/tightens relations
+    2. Within each component, try playbook match on the group
+    3. Ungrouped singletons get individual playbook matching
+    """
+    components = _build_connected_components(obligations, relations)
 
     groups: list[tuple[list[Obligation], PlaybookEntry | None]] = []
-    for obls, pb in pb_groups.values():
-        groups.append((obls, pb))
-    for obl in ungrouped:
-        groups.append(([obl], None))
+    for component in components:
+        # Try playbook match for any obligation in the component
+        pb_match = None
+        for obl in component:
+            pb_match = match_obligation_to_playbook(obl, playbook_entries)
+            if pb_match:
+                break
+        groups.append((component, pb_match))
 
     return groups
 
@@ -209,7 +255,7 @@ def generate_findings(
     obl_id_set = {o.id for o in obligations}
 
     for theme_val, theme_obls in by_theme.items():
-        groups = _group_obligations_by_risk(theme_obls, playbook_entries)
+        groups = _group_obligations_by_risk(theme_obls, playbook_entries, relations)
 
         theme_ms = [
             ms for ms in missing_safeguards

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Finding – {{ finding.title[:50] }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/ui/">Pakete</a></li>
+        <li class="breadcrumb-item"><a href="/ui/packages/{{ package_id }}/findings">{{ package_name }}</a></li>
+        <li class="breadcrumb-item active">Finding</li>
+    </ol>
+</nav>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h4>{{ finding.title }}</h4>
+        <div class="row mb-2">
+            <div class="col-auto"><strong>Theme:</strong> {{ finding.theme }}</div>
+            <div class="col-auto"><strong>Severity:</strong> <span class="severity-{{ finding.severity }}">{{ finding.severity }}</span></div>
+            <div class="col-auto"><strong>Materiality:</strong> {{ finding.materiality }}</div>
+            <div class="col-auto"><strong>Status:</strong> <span class="badge bg-secondary">{{ finding.status }}</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header"><strong>Beschreibung</strong></div>
+    <div class="card-body">
+        <div style="white-space: pre-wrap;">{{ finding.description }}</div>
+    </div>
+</div>
+
+{% if finding.recommendation %}
+<div class="card mb-3">
+    <div class="card-header"><strong>Empfehlung</strong></div>
+    <div class="card-body">
+        <div style="white-space: pre-wrap;">{{ finding.recommendation }}</div>
+    </div>
+</div>
+{% endif %}
+
+{% if evidences %}
+<div class="card mb-3">
+    <div class="card-header"><strong>Evidenzen ({{ evidences|length }})</strong></div>
+    <div class="card-body">
+        {% for ev in evidences %}
+        <div class="card evidence-card p-2 mb-2">
+            {% if ev.quote %}<div><em>„{{ ev.quote[:300] }}{% if ev.quote|length > 300 %}…{% endif %}"</em></div>{% endif %}
+            {% if ev.rationale %}<div class="text-muted small">{{ ev.rationale[:200] }}</div>{% endif %}
+            {% if ev.segment_id %}<div class="text-muted small">Segment: {{ ev.segment_id[:12] }}…</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if missing_safeguards %}
+<div class="card mb-3">
+    <div class="card-header"><strong>Fehlende Schutzmechanismen ({{ missing_safeguards|length }})</strong></div>
+    <div class="card-body">
+        {% for ms in missing_safeguards %}
+        <div class="card missing-safeguard p-2 mb-2">
+            <strong>{{ ms.label }}</strong>
+            {% if ms.explanation %}<div class="small text-muted">{{ ms.explanation }}</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="card mb-3">
+    <div class="card-header"><strong>Review-Aktion</strong></div>
+    <div class="card-body">
+        <form method="post" action="/ui/packages/{{ package_id }}/findings/{{ finding.id }}/review">
+            <div class="row g-2">
+                <div class="col-auto">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="open" {% if finding.status == 'open' %}selected{% endif %}>Offen</option>
+                        <option value="accepted" {% if finding.status == 'accepted' %}selected{% endif %}>Akzeptiert</option>
+                        <option value="mitigated" {% if finding.status == 'mitigated' %}selected{% endif %}>Mitigiert</option>
+                        <option value="rejected" {% if finding.status == 'rejected' %}selected{% endif %}>Abgelehnt</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <input type="text" name="comment" class="form-control form-control-sm" placeholder="Kommentar (optional)">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-sm btn-primary">Speichern</button>
+                </div>
+            </div>
+        </form>
+        {% if review_saved %}
+        <div class="alert alert-success mt-2 mb-0 py-1">Status gespeichert.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

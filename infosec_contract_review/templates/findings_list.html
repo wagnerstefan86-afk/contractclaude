@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Findings – {{ package_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/ui/">Pakete</a></li>
+        <li class="breadcrumb-item active">{{ package_name }}</li>
+    </ol>
+</nav>
+
+<h2>Findings – {{ package_name }}</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select name="theme" class="form-select form-select-sm">
+            <option value="">Alle Themen</option>
+            {% for t in themes %}
+            <option value="{{ t }}" {% if t == filter_theme %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="severity" class="form-select form-select-sm">
+            <option value="">Alle Severities</option>
+            {% for s in severities %}
+            <option value="{{ s }}" {% if s == filter_severity %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="materiality" class="form-select form-select-sm">
+            <option value="">Alle Materiality</option>
+            {% for m in materialities %}
+            <option value="{{ m }}" {% if m == filter_materiality %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="status" class="form-select form-select-sm">
+            <option value="">Alle Status</option>
+            {% for st in statuses %}
+            <option value="{{ st }}" {% if st == filter_status %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Suche..." value="{{ search_q or '' }}">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-outline-primary">Filtern</button>
+    </div>
+</form>
+
+<div class="mb-2 text-muted">{{ findings|length }} Findings</div>
+
+{% if findings %}
+<table class="table table-hover table-sm">
+    <thead>
+        <tr>
+            <th>Theme</th>
+            <th>Titel</th>
+            <th>Severity</th>
+            <th>Materiality</th>
+            <th>Status</th>
+            <th>Playbook</th>
+            <th>Erstellt</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in findings %}
+        <tr class="status-{{ f.status }}">
+            <td><small>{{ f.theme }}</small></td>
+            <td><a href="/ui/packages/{{ package_id }}/findings/{{ f.id }}">{{ f.title[:80] }}{% if f.title|length > 80 %}…{% endif %}</a></td>
+            <td><span class="severity-{{ f.severity }}">{{ f.severity }}</span></td>
+            <td>{{ f.materiality }}</td>
+            <td>{{ f.status }}</td>
+            <td>{% if f.playbook_entry_id %}✓{% else %}–{% endif %}</td>
+            <td><small>{{ f.created_at.strftime('%d.%m.%Y') }}</small></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">Keine Findings für die ausgewählten Filter.</div>
+{% endif %}
+{% endblock %}

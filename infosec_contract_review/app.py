@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from infosec_contract_review.api import packages, analysis, review, config
+from infosec_contract_review.api import packages, analysis, review, config, ui
 
 app = FastAPI(
     title="InfoSec Contract Review API",
@@ -20,6 +20,7 @@ app.include_router(packages.router)
 app.include_router(analysis.router)
 app.include_router(review.router)
 app.include_router(config.router)
+app.include_router(ui.router)
 
 
 @app.get("/health")
