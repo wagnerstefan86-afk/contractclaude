@@ -365,13 +365,19 @@ def generate_findings(
         if ct.result not in ("conflict_found", "unclear"):
             continue
 
+        # Cross-theme findings are currently analyst-debug output with
+        # mixed-language rationale. They should stay in the DB for audit
+        # trail but be hidden from the default reviewer view, so we file
+        # them as severity=INFO / materiality=LOW. The existing UI/Excel
+        # default filter (severity != "info") then hides them;
+        # ?include_info=1 makes them visible again.
         ct_finding = Finding(
             run_id=run_id,
             theme=Theme.OTHER,
-            title=f"Cross-Theme-Konflikt: {ct.rationale[:100] if ct.rationale else 'Themenübergreifender Konflikt'}",
+            title=f"[Cross-Theme] {ct.rationale[:100] if ct.rationale else 'Themenübergreifender Konflikt'}",
             description=f"**Cross-Theme-Prüfergebnis:** {ct.result}\n\n**Begründung:** {ct.rationale or '–'}",
-            severity=_SEVERITY_FROM_MATERIALITY.get(ct.materiality, FindingSeverity.HIGH),
-            materiality=ct.materiality,
+            severity=FindingSeverity.INFO,
+            materiality=Materiality.LOW,
             status=FindingStatus.OPEN,
             recommendation="Manuelle Prüfung der themenübergreifenden Wechselwirkung empfohlen.",
         )

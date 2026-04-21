@@ -71,6 +71,11 @@ templates.env.globals["MATERIALITY_LABELS"] = MATERIALITY_LABELS
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/app/uploads")
 
+# Single source of truth for the lenses the "Analyse starten" button
+# triggers. Both ui_start_analysis and package_detail read this, so the
+# template label and the actual pipeline call stay in sync.
+ANALYSIS_LENSES = ["LENS-AUDIT", "LENS-INCIDENT", "LENS-SLA"]
+
 
 def _enum_val(obj) -> str:
     return obj.value if hasattr(obj, "value") else str(obj)
@@ -251,6 +256,7 @@ def package_detail(
         "has_parsed": has_parsed,
         "has_running": running_run is not None,
         "run_summary": run_summary,
+        "analysis_lenses": ANALYSIS_LENSES,
         "msg": msg})
 
 
@@ -368,7 +374,7 @@ def ui_start_analysis(package_id: str, db: Session = Depends(get_db)):
 
     try:
         result = run_obligation_extraction(
-            package_id, run.id, ["LENS-AUDIT", "LENS-INCIDENT", "LENS-SLA"], db,
+            package_id, run.id, list(ANALYSIS_LENSES), db,
         )
         msg = f"Analyse+abgeschlossen:+{result.get('obligations_extracted', 0)}+Obligations,+{result.get('findings_generated', 0)}+Findings"
     except Exception as e:
