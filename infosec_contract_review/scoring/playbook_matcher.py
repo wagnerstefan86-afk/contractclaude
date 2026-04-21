@@ -85,7 +85,9 @@ def _g(*terms: str) -> tuple[str, ...]:
 PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
     # ------------------------------------------------------------------ AUDIT
     "PB-AUDIT-001": KeywordSignature(
-        # Unlimited audit right, no notice/frequency cap
+        # Unlimited audit right, no notice/frequency cap.
+        # Must NOT match when the clause already states a standard
+        # frequency / notice period / time-window.
         required_groups=(
             _g("audit", "prüfung", "prüfungsrecht", "prüfer", "inspection", "inspektion"),
         ),
@@ -104,6 +106,29 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "zeitfenster", "geschäftszeiten", "business hours",
                 "limit",
             ),
+        ),
+        negative_any=(
+            # Frequency is capped → not an unlimited-audit risk.
+            "einmal jährlich", "1x jährlich", "1 x jährlich",
+            "jährlich einmal", "pro jahr", "pro kalenderjahr",
+            "max einmal", "max. einmal", "max 1x", "max. 1x",
+            "maximal einmal", "maximal 1x", "höchstens einmal", "höchstens 1x",
+            "once a year", "once per year", "annually",
+            # Notice period is given → not a no-notice risk.
+            "werktage vorlauf", "werktagen vorlauf",
+            "werktage vorher", "werktagen vorher",
+            "tage vorlauf", "tagen vorlauf",
+            "mit vorlaufzeit von", "mit vorlauf von",
+            "mit ankündigungsfrist", "ankündigungsfrist von",
+            "nach vorheriger ankündigung", "mit vorheriger ankündigung",
+            "mit vorheriger schriftlicher ankündigung",
+            "vorab angekündigt", "with advance notice",
+            "advance notice of",
+            # Time-window is restricted to business hours → standard.
+            "während geschäftszeiten", "während der geschäftszeiten",
+            "während üblicher geschäftszeiten", "zu üblichen geschäftszeiten",
+            "innerhalb der geschäftszeiten", "innerhalb normaler geschäftszeiten",
+            "during business hours", "during normal business hours",
         ),
         min_support_hits=1,
     ),
@@ -127,6 +152,22 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "eingesetzt", "zugang",
             ),
         ),
+        negative_any=(
+            # Third-party audits subject to approval → standard defensive
+            # regulation, not the risk pattern this entry warns about.
+            "mit zustimmung", "mit schriftlicher zustimmung",
+            "nach zustimmung", "nach vorheriger zustimmung",
+            "nach vorheriger schriftlicher zustimmung",
+            "mit genehmigung", "mit vorheriger genehmigung",
+            "nach genehmigung",
+            "mit einwilligung", "nach einwilligung",
+            "with consent", "with prior consent",
+            "with written consent", "with prior written consent",
+            "subject to approval", "subject to prior approval",
+            "prior approval", "prior written approval",
+            "nur mit zustimmung", "nur nach zustimmung",
+            "only with consent", "only upon approval",
+        ),
         min_support_hits=1,
     ),
     "PB-AUDIT-003": KeywordSignature(
@@ -144,6 +185,20 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "personal", "ressourcen", "zugang", "zugänge",
                 "support", "audit", "prüfung", "bereitstellen", "zur verfügung",
             ),
+        ),
+        negative_any=(
+            # Compensation is explicitly regulated → not a free-lunch risk.
+            "nach aufwand", "gegen aufwand", "gegen erstattung",
+            "gegen kostenerstattung", "gegen nachweis",
+            "nach tagessatz", "zu tagessätzen", "zu aktuellen tagessätzen",
+            "zu marktüblichen sätzen", "zu den marktüblichen",
+            "gegen honorar", "gegen vergütung", "gegen bezahlung",
+            "gegen pauschale", "gegen eine pauschale",
+            "gesondert vergütet", "gesondert abgerechnet",
+            "zu vergütenden aufwand", "zu vergütender aufwand",
+            "berechnet nach", "abgerechnet nach",
+            "time and material", "time & material",
+            "at cost", "on a cost basis", "on time and material basis",
         ),
         min_support_hits=0,
     ),
@@ -226,25 +281,53 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
 
     # ------------------------------------------------------------------- SLA
     "PB-SLA-001": KeywordSignature(
-        # SLA without maintenance-window exemption
+        # SLA without maintenance-window exemption.
+        # Risk is the ABSENCE of an exemption. The previous signature
+        # matched on any co-occurrence of "wartung" + "ausgenommen",
+        # which also fires for the SAFE case "Wartungsarbeiten sind
+        # ausgenommen". Support group 2 is therefore restricted to
+        # risk markers (no exemption / explicitly included / missing);
+        # the SAFE exemption phrases are in negative_any.
         required_groups=(
             _g("sla", "service level", "verfügbarkeit", "availability"),
-        ),
-        support_groups=(
             _g(
                 "wartung", "wartungsfenster", "maintenance", "maintenance window",
                 "planned maintenance",
             ),
+        ),
+        support_groups=(
             _g(
-                "ausgenommen", "exempt", "nicht einbezogen",
+                "nicht ausgenommen", "nicht einbezogen",
                 "ohne ausnahme", "keine ausnahme",
-                "fehlt", "ohne wartungsfenster",
+                "ohne wartungsfenster-ausnahme",
+                "wartungsfenster fehlt", "keine wartungsfenster-ausnahme",
+                "werden einbezogen", "werden mitgerechnet",
+                "not exempt", "not excluded",
+                "included in availability",
             ),
         ),
-        min_support_hits=2,
+        negative_any=(
+            # Maintenance is explicitly regulated → risk is NOT there.
+            "wartung ausgenommen", "wartung ist ausgenommen",
+            "wartungsfenster sind ausgenommen", "wartungsfenster ausgenommen",
+            "wartungsfenster werden ausgenommen",
+            "wartungsarbeiten sind ausgenommen", "wartungsarbeiten ausgenommen",
+            "geplante wartung ausgenommen",
+            "geplante wartungsarbeiten sind ausgenommen",
+            "von der verfügbarkeitsmessung ausgenommen",
+            "von der sla-messung ausgenommen",
+            "von der messung ausgenommen",
+            "nicht berücksichtigt",
+            "excluded from availability", "excluded maintenance",
+            "planned maintenance is excluded",
+        ),
+        min_support_hits=1,
     ),
     "PB-SLA-002": KeywordSignature(
-        # Availability >= 99.99% or transactional measurement
+        # Availability >= 99.99% or transactional measurement.
+        # Bare "transaktion" removed — too many billing-/count-related
+        # false positives. Only phrases that actually denote the
+        # measurement method remain.
         required_groups=(
             _g("verfügbarkeit", "availability", "uptime"),
         ),
@@ -252,14 +335,26 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
             _g(
                 "99.99", "99,99", "99.999", "99,999",
                 "four nines", "vier neunen",
-                "transaktion", "transaktionsbasiert", "transactional",
-                "per transaction",
+                "transaktionsbasiert", "auf transaktionsebene",
+                "pro transaktion", "je transaktion",
+                "transactional", "per transaction",
+                "measured per transaction",
             ),
+        ),
+        negative_any=(
+            # Dedicated / single-tenant hosting makes four-nines plausibly
+            # achievable → not the risk pattern this entry warns about.
+            "dediziert", "dedicated", "single tenant", "single-tenant",
+            "dedizierte infrastruktur", "dedicated infrastructure",
         ),
         min_support_hits=1,
     ),
     "PB-SLA-003": KeywordSignature(
-        # No SLA suspension during DR / BCM
+        # No SLA suspension during DR / BCM.
+        # The risk is the ABSENCE of a suspension clause, so the signature
+        # must only fire when the clause explicitly says SLA keeps
+        # running during DR/BCM (or such a suspension is absent / denied).
+        # Positive-suspension phrases are therefore in negative_any.
         required_groups=(
             _g("sla", "verfügbarkeit", "service level"),
             _g(
@@ -267,19 +362,46 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "business continuity", "notfall", "notfallbetrieb",
                 "itscm",
             ),
-        ),
-        support_groups=(
             _g(
-                "suspendier", "suspension", "ausgesetzt", "ausnahme",
-                "nicht ausgesetzt", "ohne suspension",
-                "weiter gelten", "gilt weiter",
+                # Risk markers: SLA keeps applying during DR/BCM.
+                "gilt weiter", "weiter gelten", "gelten weiter",
+                "gelten auch bei dr", "gelten auch bei bcm",
+                "gelten auch während", "gilt auch während",
+                "gilt auch bei dr", "gilt auch bei bcm",
+                "ohne suspension", "keine suspension",
+                "keine ausnahme bei dr", "keine ausnahme bei bcm",
+                "ohne ausnahme bei dr", "ohne ausnahme bei bcm",
+                "nicht ausgesetzt", "nicht suspendiert",
+                "werden nicht ausgesetzt", "wird nicht ausgesetzt",
+                "werden nicht suspendiert", "wird nicht suspendiert",
+                "gelten unverändert", "unverändert fort",
             ),
+        ),
+        negative_any=(
+            # Explicit suspension clause present → risk is NOT there.
+            "werden bei dr ausgesetzt", "werden bei bcm ausgesetzt",
+            "wird bei dr ausgesetzt", "wird bei bcm ausgesetzt",
+            "werden im dr-fall ausgesetzt", "werden im bcm-fall ausgesetzt",
+            "ausgesetzt bei dr", "ausgesetzt bei bcm",
+            "ausgesetzt im dr-fall", "ausgesetzt im bcm-fall",
+            "suspendiert bei dr", "suspendiert bei bcm",
+            "suspendiert im dr-fall", "suspendiert im bcm-fall",
+            "suspension gilt", "suspendierung gilt",
+            "für die dauer des notfallbetriebs ausgesetzt",
+            "für die dauer des dr-falls ausgesetzt",
+            "für die dauer des bcm-falls ausgesetzt",
+            "sla-suspension ist geregelt",
+            "explizite suspension",
+            "suspension im dr", "suspension im bcm",
         ),
         min_support_hits=0,
     ),
     "PB-SLA-004": KeywordSignature(
         # Unrealistically short reaction / restore times (e.g. 15-min P1).
         # Required: a response/restore keyword AND a tight-time marker.
+        # Tight-time group narrowed to <= 2 hours — 3h and 4h markers
+        # dropped to avoid matching standard P3 / Managed-Print-scale
+        # times (GS-03 false positives, GS-01 P3-4h granularity issue).
         required_groups=(
             _g(
                 "reaktion", "reaktionszeit", "response time",
@@ -295,14 +417,15 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "fifteen minutes", "thirty minutes",
                 "eine stunde", "1 stunde", "within one hour", "within 1 hour",
                 "2 stunden", "two hours", "2 hours", "within 2 hours",
-                "3 stunden", "three hours", "3 hours", "within 3 hours",
-                "4 stunden", "four hours", "4 hours", "within 4 hours",
             ),
         ),
         negative_any=(
-            # Standard deadlines (>= 8h) do not belong here.
-            "8 stunden", "acht stunden",
-            "24 stunden", "next business day", "nbd",
+            # Standard / mild deadlines do not belong here.
+            "3 stunden", "three hours", "3 hours", "within 3 hours",
+            "4 stunden", "four hours", "4 hours", "within 4 hours",
+            "8 stunden", "acht stunden", "8 hours", "eight hours",
+            "24 stunden", "twenty-four hours",
+            "next business day", "nbd",
         ),
         min_support_hits=0,
     ),

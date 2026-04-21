@@ -127,6 +127,191 @@ _DEFENSIVE_SCOPE_LIMIT = (
     "auftragsumfang", "vertragsumfang",
 )
 
+# ---------------------------------------------------------------------------
+# Explicit-limit patterns (Phase 2a)
+# ---------------------------------------------------------------------------
+# Clauses that regulate a risk (frequency cap, notice period, time window,
+# consent requirement, compensation model, penalty cap, maintenance
+# exclusion, DR/BCM suspension) must not surface as normal HIGH/HIGH
+# findings. These phrases mark "the risk is limited" in the obligation
+# text. A RISK-AMPLIFIER check guards against inversions like
+# "NICHT ausgenommen" or "OHNE Cap".
+
+_EXPLICIT_LIMITS_FREQUENCY = (
+    "1x jährlich", "1 x jährlich", "einmal jährlich", "einmal im jahr",
+    "jährlich einmal", "pro jahr", "pro kalenderjahr",
+    "max einmal", "max. einmal", "max 1x", "max. 1x",
+    "maximal einmal", "maximal 1x", "höchstens einmal", "höchstens 1x",
+    "once a year", "once per year", "annually",
+)
+_EXPLICIT_LIMITS_NOTICE = (
+    "werktage vorlauf", "werktagen vorlauf",
+    "werktage vorher", "werktagen vorher",
+    "tage vorlauf", "tagen vorlauf",
+    "mit vorlaufzeit von", "mit vorlauf von",
+    "mit ankündigungsfrist", "ankündigungsfrist von",
+    "nach vorheriger ankündigung", "mit vorheriger ankündigung",
+    "mit vorheriger schriftlicher ankündigung",
+    "vorab angekündigt", "with advance notice",
+    "advance notice of",
+)
+_EXPLICIT_LIMITS_TIMEWINDOW = (
+    "während geschäftszeiten", "während der geschäftszeiten",
+    "während üblicher geschäftszeiten", "zu üblichen geschäftszeiten",
+    "innerhalb der geschäftszeiten", "innerhalb normaler geschäftszeiten",
+    "during business hours", "during normal business hours",
+)
+_EXPLICIT_LIMITS_CONSENT = (
+    "mit zustimmung", "mit schriftlicher zustimmung",
+    "nach zustimmung", "nach vorheriger zustimmung",
+    "nach vorheriger schriftlicher zustimmung",
+    "mit genehmigung", "mit vorheriger genehmigung",
+    "mit einwilligung", "nach einwilligung",
+    "with consent", "with prior consent",
+    "with written consent", "with prior written consent",
+    "subject to approval", "subject to prior approval",
+    "prior approval", "prior written approval",
+    "nur mit zustimmung", "nur nach zustimmung",
+    "only with consent", "only upon approval",
+    # Genitive / passive phrasings common in German contract language.
+    "der zustimmung", "der schriftlichen zustimmung",
+    "der vorherigen zustimmung", "der vorherigen schriftlichen zustimmung",
+    "vorheriger zustimmung", "vorheriger schriftlicher zustimmung",
+    "einer zustimmung", "einer vorherigen zustimmung",
+    "der genehmigung", "der vorherigen genehmigung",
+    "vorheriger genehmigung",
+    "bedürfen der zustimmung", "bedarf der zustimmung",
+    "bedürfen der genehmigung", "bedarf der genehmigung",
+    "bedürfen einer zustimmung", "bedarf einer zustimmung",
+    "zustimmungspflichtig", "genehmigungspflichtig",
+)
+_EXPLICIT_LIMITS_PRIORITY_MATRIX = (
+    # Priority 2+ tickets with an "hours" magnitude are almost always
+    # standard SLA-matrix content, not a 15-min-P1 risk. P1 with tight
+    # times is already caught upstream by PB-SLA-004's matcher.
+    "priorität 2", "priorität 3", "priorität 4",
+    "priority 2", "priority 3", "priority 4",
+    "prio 2", "prio 3", "prio 4",
+    " p2 ", " p3 ", " p4 ",
+    "p2 reaktionszeit", "p3 reaktionszeit", "p4 reaktionszeit",
+    "p2 reaktion", "p3 reaktion", "p4 reaktion",
+    "sev2", "sev 2", "severity 2",
+    "sev3", "sev 3", "severity 3",
+    "sev4", "sev 4", "severity 4",
+    "für störungen der priorität 2", "für störungen der priorität 3",
+    "für störungen der priorität 4",
+)
+_EXPLICIT_LIMITS_COST_MODEL = (
+    "nach aufwand", "gegen aufwand", "gegen erstattung",
+    "gegen kostenerstattung", "gegen nachweis",
+    "nach tagessatz", "zu tagessätzen", "zu aktuellen tagessätzen",
+    "zu marktüblichen sätzen", "zu den marktüblichen",
+    "gegen honorar", "gegen vergütung", "gegen bezahlung",
+    "gegen pauschale", "gegen eine pauschale",
+    "gesondert vergütet", "gesondert abgerechnet",
+    "berechnet nach", "abgerechnet nach",
+    "time and material", "time & material",
+    "at cost", "on a cost basis",
+)
+_EXPLICIT_LIMITS_PENALTY_CAP = (
+    "gedeckelt auf", "gedeckelt bei", "gedeckelt",
+    "gedeckelte service credit", "gedeckelte vertragsstrafe",
+    "cap auf", "cap bei", "capped at", "capped",
+    "jahres-cap", "jahrescap", "monats-cap", "monatscap",
+    "monthly cap", "annual cap",
+    "deckelung auf", "deckelung bei", "deckelung",
+    "begrenzt auf", "limitiert auf", "limit auf",
+    "max % des monatsentgelts", "max. % des monatsentgelts",
+    "maximal % des monatsentgelts", "maximal % des jahresentgelts",
+    "höchstens % des monatsentgelts", "höchstens % des jahresentgelts",
+    "obergrenze von", "jährliche obergrenze", "monatliche obergrenze",
+)
+_EXPLICIT_LIMITS_STANDARD_DEADLINE = (
+    # Standard incident-reporting deadlines (24 h is explicitly acceptable
+    # per playbook PB-INC-001). These markers flag "the deadline is the
+    # standard one, not the risky-short variant".
+    "innerhalb von 24 stunden", "innerhalb 24 stunden",
+    "binnen 24 stunden", "within 24 hours", "within twenty-four hours",
+    "24-stunden-frist", "24h-frist",
+    "spätestens 24 stunden", "spätestens innerhalb von 24",
+    "innerhalb von 72 stunden", "within 72 hours",
+)
+_EXPLICIT_LIMITS_MAINTENANCE_EXCLUDED = (
+    "wartungsfenster sind ausgenommen", "wartungsfenster ausgenommen",
+    "wartung ist ausgenommen", "wartung ausgenommen",
+    "wartungsfenster werden ausgenommen",
+    "wartungsarbeiten sind ausgenommen",
+    "geplante wartungsarbeiten sind ausgenommen",
+    "geplante wartung ausgenommen",
+    "excluded from availability", "excluded maintenance",
+    "planned maintenance is excluded",
+    "wartungszeiten nicht berücksichtigt",
+    "von der verfügbarkeitsmessung ausgenommen",
+    "von der sla-messung ausgenommen",
+)
+_EXPLICIT_LIMITS_DR_SUSPENSION_PRESENT = (
+    "sla werden bei dr", "sla werden bei bcm",
+    "sla wird bei dr", "sla wird bei bcm",
+    "werden bei dr ausgesetzt", "werden bei bcm ausgesetzt",
+    "wird bei dr ausgesetzt", "wird bei bcm ausgesetzt",
+    "werden im dr-fall ausgesetzt", "werden im bcm-fall ausgesetzt",
+    "ausgesetzt bei dr", "ausgesetzt bei bcm",
+    "ausgesetzt im dr-fall", "ausgesetzt im bcm-fall",
+    "suspendiert bei dr", "suspendiert bei bcm",
+    "suspendiert im dr-fall", "suspendiert im bcm-fall",
+    "suspension gilt bei dr", "suspension gilt bei bcm",
+    "für die dauer des notfallbetriebs ausgesetzt",
+    "für die dauer des dr-falls ausgesetzt",
+    "für die dauer des bcm-falls ausgesetzt",
+    "ausgenommen bei dr", "ausgenommen bei bcm",
+    "ausgenommen im dr-fall", "ausgenommen im bcm-fall",
+)
+
+_EXPLICIT_LIMIT_ALL = (
+    _EXPLICIT_LIMITS_FREQUENCY
+    + _EXPLICIT_LIMITS_NOTICE
+    + _EXPLICIT_LIMITS_TIMEWINDOW
+    + _EXPLICIT_LIMITS_CONSENT
+    + _EXPLICIT_LIMITS_COST_MODEL
+    + _EXPLICIT_LIMITS_PENALTY_CAP
+    + _EXPLICIT_LIMITS_MAINTENANCE_EXCLUDED
+    + _EXPLICIT_LIMITS_DR_SUSPENSION_PRESENT
+    + _EXPLICIT_LIMITS_STANDARD_DEADLINE
+    + _EXPLICIT_LIMITS_PRIORITY_MATRIX
+)
+
+# Risk amplifiers veto the explicit_limit classification. If any of these
+# occurs, the clause is NOT a standard limit — it is the risky case.
+# Substring form is deliberately specific (e.g. "nicht ausgenommen" rather
+# than plain "nicht") to avoid misfiring on unrelated negations.
+_EXPLICIT_LIMIT_RISK_AMPLIFIERS = (
+    "unbegrenzt", "unlimitiert", "unlimited",
+    "ohne begrenzung", "keine begrenzung", "nicht begrenzt",
+    "ohne limit", "kein limit",
+    "ohne cap", "kein cap", "uncapped", "without cap", "no cap",
+    "ohne deckelung", "keine deckelung",
+    "nicht gedeckelt", "ungedeckelt",
+    "ohne obergrenze", "keine obergrenze",
+    "jederzeit", "anytime",
+    "ohne ankündigung", "ohne vorlaufzeit",
+    "outside business hours", "unangekündigt",
+    "ohne zustimmung", "ohne genehmigung", "without consent",
+    "nicht ausgenommen", "nicht ausgesetzt",
+    "nicht suspendiert",
+    "werden nicht ausgesetzt", "wird nicht ausgesetzt",
+    "werden nicht suspendiert", "wird nicht suspendiert",
+    "gilt auch bei dr", "gilt auch bei bcm",
+    "gelten auch bei dr", "gelten auch bei bcm",
+    "weiter gelten", "gilt weiter", "gelten weiter",
+    # Tight-time markers that must NOT count as "standard deadlines":
+    "2 stunden", "two hours", "2 hours",
+    "3 stunden", "3 hours",
+    "unverzüglich", "sofort", "immediately",
+    # Risk-marker for "every event" (PB-INC-002 territory):
+    "jedes security-event", "jedes security event", "jeder vorfall",
+)
+
+
 _NEGATION_NEAR_POSITIVE = (
     # If these appear in the text, do not count it as positive. This is
     # a cheap "negation nearby" heuristic — good enough when the text is
@@ -155,9 +340,17 @@ def _is_positive_text(text: str) -> tuple[bool, str]:
 
     Returns (is_positive, matched_category) for diagnostics.
     """
+    # Explicit-limit detection runs FIRST because it has its own, tighter
+    # risk-amplifier veto. The generic "nicht/kein/ohne"-check used by
+    # the other categories would misfire on legitimate limit sentences
+    # that happen to contain "ohne" (e.g. "ohne zusätzliche Kosten").
+    if _contains_any(text, _EXPLICIT_LIMIT_ALL) and not _contains_any(
+        text, _EXPLICIT_LIMIT_RISK_AMPLIFIERS
+    ):
+        return True, "explicit_limit"
+
     if _contains_any(text, _NEGATION_NEAR_POSITIVE):
-        # Negation short-circuits. Any negation nearby means we can't be
-        # sure the statement is positive — treat as ambiguous.
+        # Generic negation short-circuit for the remaining categories.
         return False, ""
 
     cert_hit = _contains_any(text, _POSITIVE_CERTIFICATION)
