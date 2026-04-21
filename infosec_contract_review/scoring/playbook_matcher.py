@@ -277,6 +277,57 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
         ),
         min_support_hits=0,
     ),
+    "PB-SLA-004": KeywordSignature(
+        # Unrealistically short reaction / restore times (e.g. 15-min P1).
+        # Required: a response/restore keyword AND a tight-time marker.
+        required_groups=(
+            _g(
+                "reaktion", "reaktionszeit", "response time",
+                "wiederherstell", "wiederherstellungszeit",
+                "restore time", "restore-zeit", "resolution time",
+                "entstör", "entstörzeit",
+                "p1", "priorität 1", "priority 1",
+                "severity 1", "sev1", "sev 1",
+            ),
+            _g(
+                "15 min", "20 min", "30 min",
+                "15 minuten", "20 minuten", "30 minuten",
+                "fifteen minutes", "thirty minutes",
+                "eine stunde", "1 stunde", "within one hour", "within 1 hour",
+                "2 stunden", "two hours", "2 hours", "within 2 hours",
+                "3 stunden", "three hours", "3 hours", "within 3 hours",
+                "4 stunden", "four hours", "4 hours", "within 4 hours",
+            ),
+        ),
+        negative_any=(
+            # Standard deadlines (>= 8h) do not belong here.
+            "8 stunden", "acht stunden",
+            "24 stunden", "next business day", "nbd",
+        ),
+        min_support_hits=0,
+    ),
+    "PB-SLA-005": KeywordSignature(
+        # Uncapped / unlimited contractual penalty or service credit.
+        required_groups=(
+            _g(
+                "vertragsstrafe", "vertragsstrafen",
+                "pönale", "poenale", "pönalen",
+                "penalty", "penalties",
+                "service credit", "service-credit", "service credits",
+            ),
+        ),
+        support_groups=(
+            _g(
+                "unbegrenzt", "ohne begrenzung", "ohne deckelung",
+                "ohne cap", "ohne obergrenze", "ohne limit",
+                "keine deckelung", "keine obergrenze", "keine begrenzung",
+                "kein cap", "kein limit",
+                "unlimited", "uncapped", "without cap", "no cap",
+                "unlimitiert",
+            ),
+        ),
+        min_support_hits=1,
+    ),
 }
 
 
@@ -397,7 +448,17 @@ def _derive_key_from_pattern(pe: PlaybookEntry) -> str | None:
             return "PB-SLA-001"
         if "99.99" in pattern or "99,99" in pattern or "transakt" in pattern:
             return "PB-SLA-002"
-        if "dr" in pattern or "bcm" in pattern or "suspension" in pattern:
+        if ("reaktion" in pattern or "wiederherstell" in pattern
+                or "restore" in pattern or "resolution" in pattern):
+            return "PB-SLA-004"
+        if (("vertragsstrafe" in pattern or "pönale" in pattern
+             or "poenale" in pattern or "penalty" in pattern
+             or "service credit" in pattern)
+                and ("unbegrenzt" in pattern or "gedeckelt" in pattern
+                     or "cap" in pattern or "deckelung" in pattern)):
+            return "PB-SLA-005"
+        if ("suspension" in pattern or "bcm" in pattern
+                or "disaster recovery" in pattern or "dr-" in pattern):
             return "PB-SLA-003"
     return None
 

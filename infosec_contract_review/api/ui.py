@@ -368,7 +368,7 @@ def ui_start_analysis(package_id: str, db: Session = Depends(get_db)):
 
     try:
         result = run_obligation_extraction(
-            package_id, run.id, ["LENS-AUDIT", "LENS-INCIDENT"], db,
+            package_id, run.id, ["LENS-AUDIT", "LENS-INCIDENT", "LENS-SLA"], db,
         )
         msg = f"Analyse+abgeschlossen:+{result.get('obligations_extracted', 0)}+Obligations,+{result.get('findings_generated', 0)}+Findings"
     except Exception as e:

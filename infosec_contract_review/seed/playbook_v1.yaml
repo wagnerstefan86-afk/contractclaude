@@ -190,3 +190,58 @@ playbook_entries:
     escalation_note: >
       No-Go wenn: SLA >= 99.5% ohne DR-Suspension bei gleichzeitig
       fehlendem BCM-Nachweis.
+
+  - id: PB-SLA-004
+    version: "1.0"
+    theme: sla_feasibility
+    risk_pattern: "Unrealistisch kurze Reaktions- oder Wiederherstellungszeiten"
+    standard_position: >
+      P1-Reaktionszeiten unter 30 Minuten und Wiederherstellungszeiten
+      unter 4 Stunden sind nur mit dediziertem 24/7-SOC und vorab
+      abgestimmten Eskalationsketten darstellbar. Reaktionszeiten
+      von 15 Minuten im Shared-Betrieb ohne 24/7-Support sind
+      operativ nicht leistbar.
+    alt_wordings:
+      - >
+        Reaktionszeiten richten sich nach der vereinbarten Priorität
+        und Servicezeiten. P1 innerhalb von 1 Stunde,
+        Wiederherstellungsziel P1 innerhalb von 8 Stunden während der
+        Servicezeiten.
+    bidder_questions:
+      - "Welche Priorität-zu-Zeit-Matrix ist operativ leistbar?"
+      - "Gelten die Reaktionszeiten auch außerhalb der Servicezeiten?"
+      - "Ist ein dedizierter 24/7-SOC für diese Zeiten bepreist?"
+    applicable_when: >
+      Vertrag fordert Reaktionszeiten unter 30 Minuten oder
+      Wiederherstellungszeiten unter 4 Stunden ohne explizite
+      Servicezeiten-Begrenzung oder ohne Priorit.ätsmatrix.
+    escalation_note: >
+      No-Go wenn: Reaktionszeit < 15 Minuten ohne bepreistes 24/7-SOC.
+
+  - id: PB-SLA-005
+    version: "1.0"
+    theme: sla_feasibility
+    risk_pattern: "Unbegrenzte oder nicht gedeckelte Vertragsstrafe"
+    standard_position: >
+      Vertragsstrafen, Pönalen und Service Credits werden pro Monat auf
+      einen Prozentsatz des Monatsentgelts (Standardband: 10-25 %) und
+      pro Vertragsjahr auf einen Gesamtcap begrenzt. Ungedeckelte oder
+      kumulierende Strafen sind nicht akzeptabel, insbesondere wenn sie
+      neben Schadensersatz geltend gemacht werden können.
+    alt_wordings:
+      - >
+        Die Summe aller Vertragsstrafen und Service Credits ist pro
+        Monat auf maximal 15 % des Monatsentgelts und pro Vertragsjahr
+        auf maximal 50 % des Jahresentgelts begrenzt. Service Credits
+        werden auf Schadensersatzansprüche angerechnet.
+    bidder_questions:
+      - "Welche monatliche und jährliche Deckelung ist für Vertragsstrafen vorgesehen?"
+      - "Werden Service Credits auf weitergehende Schadensersatzansprüche angerechnet?"
+      - "Gibt es eine Kumulationsobergrenze bei mehreren SLA-Verletzungen?"
+    applicable_when: >
+      Vertrag sieht Vertragsstrafen, Pönalen oder Service Credits ohne
+      explizite monatliche oder jährliche Deckelung, ohne
+      Prozentobergrenze oder ohne Anrechnungsregel vor.
+    escalation_note: >
+      No-Go wenn: Vertragsstrafen ohne jeglichen Cap oder ohne
+      Anrechnung auf Schadensersatz.

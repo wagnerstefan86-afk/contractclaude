@@ -83,6 +83,27 @@ rule_scan_config:
     - keyword: "wartungsfenster"
       flags: [maintenance_window]
       theme: sla_feasibility
+    - keyword: "reaktionszeit"
+      flags: [response_time]
+      theme: sla_feasibility
+    - keyword: "response time"
+      flags: [response_time]
+      theme: sla_feasibility
+    - keyword: "wiederherstellungszeit"
+      flags: [resolution_time]
+      theme: sla_feasibility
+    - keyword: "entstörzeit"
+      flags: [resolution_time]
+      theme: sla_feasibility
+    - keyword: "service credit"
+      flags: [service_credit]
+      theme: sla_feasibility
+    - keyword: "service-credit"
+      flags: [service_credit]
+      theme: sla_feasibility
+    - keyword: "uptime"
+      flags: [uptime]
+      theme: sla_feasibility
     - keyword: "subunternehmer"
       flags: [subcontractor]
       theme: subcontractor
