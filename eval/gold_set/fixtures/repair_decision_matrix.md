@@ -11,6 +11,7 @@ von der Root-Cause-Verteilung zur zu ändernden Regelstelle.
 | A. Matcher-Signatur | `scoring/playbook_matcher.py` | `PLAYBOOK_SIGNATURES[PB-XXX]` — `negative_any`, `support_groups`, `required_groups` |
 | B. Klassifikator-Pattern | `scoring/finding_classifier.py` | `_EXPLICIT_LIMITS_*`, `_EXPLICIT_LIMIT_RISK_AMPLIFIERS`, `_NEGATION_NEAR_POSITIVE` |
 | C. Eskalation | `extraction/baseline_matcher.py` + `scoring/materiality_scorer.py` | `match_obligation_to_baseline` + `score_obligation_materiality` |
+| D. Finding-Assembly | `scoring/finding_generator.py` | `_group_obligations_by_risk` — Connected-Components-Pass + zweiter Merge-by-Playbook-ID-Pass; gate der Einzelfall-Klassifikation vor dem Merge |
 
 ## Mapping root_cause → Regelstelle → konkrete Aktion
 
@@ -24,6 +25,7 @@ von der Root-Cause-Verteilung zur zu ändernden Regelstelle.
 | `classifier_generic_negation` | B | prüfen, ob die Klausel in `_EXPLICIT_LIMIT_ALL` fällt (läuft dann vor der generischen Negation) |
 | `escalation_limits_null` | C | in `baseline_matcher` prüfen, ob text-basiertes Limit-Muster `partially_supported` statt `not_supported` setzen soll |
 | `escalation_baseline_gap` | C | `_has_explicit_gap`-Test anpassen, damit generische Gap-Texte die Klassifikator-Positiv-Klassifikation nicht blockieren |
+| `assembly_wrong_merge` | D | im Finding-Generator sicherstellen, dass Obligations, die auf Einzelfall-Ebene `informational` sind, nicht per Playbook-ID-Merge in Risk-Findings hineingezogen werden (z. B. Klassifikation pro Obligation **vor** dem Merge, oder Risk-Gruppen nur aus Obligations bilden, die auch einzeln `risk` ergeben) |
 
 ## Auswahl-Heuristik
 
@@ -42,6 +44,7 @@ Dominante Kombinationen und empfohlene Aktionen:
 | `classifier_amplifier_overblock` dominant | B: Risk-Amplifier-Liste kürzen, wenn sie Limit-Klauseln fälschlich vetoiert |
 | `escalation_limits_null` dominant | C: leichte Textheuristik in `baseline_matcher`, die offensichtliche Begrenzungen (`\b\d+x\s+j(a|ä)hrlich\b`, `gedeckelt`, `werktage vorlauf`) als `partially_supported` einstuft — minimal-invasiv |
 | `escalation_baseline_gap` dominant | C: `_has_explicit_gap` nur dann als Risk behandeln, wenn `baseline_gap_description` über den generischen „keine Begrenzungen gefunden"-Text hinausgeht |
+| `assembly_wrong_merge` dominant | D: Einzelfall-Klassifikation pro Obligation vor dem Playbook-ID-Merge — informationale Obligations landen nicht im Risk-Finding-Bucket, sondern bleiben eigene Info-Findings |
 
 ## Regression-Gate
 

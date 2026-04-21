@@ -106,6 +106,22 @@ def _obl_from_fixture(entry: dict):
     )
 
 
+# Accepted root_cause codes (kept in sync with fixtures/schema.md).
+# Anything outside this set gets flagged as unknown.
+KNOWN_ROOT_CAUSES = {
+    "ok",
+    "matcher_negative_gap",
+    "matcher_over_support",
+    "matcher_required_wrong",
+    "classifier_positive_gap",
+    "classifier_amplifier_overblock",
+    "classifier_generic_negation",
+    "escalation_limits_null",
+    "escalation_baseline_gap",
+    "assembly_wrong_merge",
+}
+
+
 def _expected_visible(expected_outcome: str) -> bool:
     return expected_outcome == "risk"
 
@@ -131,6 +147,8 @@ def run(path: str) -> int:
     pbs = _build_stub_playbooks()
 
     deltas_by_root_cause: dict[str, int] = {}
+    assembly_flags: list[tuple[int, str]] = []  # (#, summary) for assembly_wrong_merge
+    unknown_codes: dict[str, int] = {}
     ok = 0
     fail = 0
     regression_deltas = 0
@@ -144,14 +162,34 @@ def run(path: str) -> int:
         exp_visible = _expected_visible(expected)
 
         is_regression = bool(entry.get("regression_case"))
-        mark = "✓" if visible_as_risk == exp_visible else "✗"
+        rc = entry.get("root_cause") or "ok"
+        if rc not in KNOWN_ROOT_CAUSES:
+            unknown_codes[rc] = unknown_codes.get(rc, 0) + 1
+
+        # Harness prediction matches reviewer expectation?
+        harness_matches_expected = visible_as_risk == exp_visible
+
+        # Special marker for assembly_wrong_merge: the harness sees the
+        # obligation in isolation as info/ok, but the live pipeline
+        # pulls it into a risk finding via playbook-id merge. The
+        # harness itself CANNOT reproduce this — it only runs matcher
+        # + classifier per obligation. We surface these cases explicitly
+        # so they don't get lost in the "ok" bucket.
+        is_assembly_case = (rc == "assembly_wrong_merge")
+
+        if harness_matches_expected and is_assembly_case:
+            mark = "⚠"
+        elif harness_matches_expected:
+            mark = "✓"
+        else:
+            mark = "✗"
+
         got_label = "RISK" if visible_as_risk else "info/—"
         exp_label = expected.upper() if expected else "?"
 
         pb_got = pb_match.id if pb_match else "—"
         pb_exp = entry.get("expected_playbook") or "—"
 
-        lens = entry.get("lens", "")
         summary_short = (entry.get("summary") or "").strip().replace("\n", " ")[:60]
 
         print(
@@ -160,9 +198,8 @@ def run(path: str) -> int:
             f"cls={cls.kind:<13} | {summary_short}"
         )
 
-        if visible_as_risk != exp_visible:
+        if not harness_matches_expected:
             fail += 1
-            rc = entry.get("root_cause") or "ok"
             deltas_by_root_cause[rc] = deltas_by_root_cause.get(rc, 0) + 1
             hyp = entry.get("hypothesis") or ""
             if hyp:
@@ -172,13 +209,48 @@ def run(path: str) -> int:
                 regression_deltas += 1
         else:
             ok += 1
+            if is_assembly_case:
+                assembly_flags.append((i, summary_short))
+                hyp = entry.get("hypothesis") or ""
+                print(
+                    "       [assembly_wrong_merge] Harness zeigt Einzelfall-"
+                    "Klassifikation als info/ok. Das Problem liegt laut Reviewer "
+                    "im Finding-Generator-Merge, nicht im Matcher/Klassifikator."
+                )
+                if hyp:
+                    print(f"       hypothesis : {hyp}")
 
     print("-" * 78)
     print(f"Summary: {ok} match / {fail} mismatch (regression subset: {regression_deltas})")
-    if deltas_by_root_cause:
-        print("\nRoot-cause distribution of mismatches:")
-        for rc, n in sorted(deltas_by_root_cause.items(), key=lambda x: -x[1]):
-            print(f"  {rc:<36} {n}")
+
+    if assembly_flags:
+        print(
+            f"\n{len(assembly_flags)} obligation(s) flagged as assembly_wrong_merge "
+            "(harness-ok, live-pipeline produces risk-finding via playbook-id "
+            "merge — not reproducible by this harness):"
+        )
+        for idx, summ in assembly_flags:
+            print(f"  #{idx:02d}  {summ}")
+
+    combined: dict[str, int] = dict(deltas_by_root_cause)
+    if assembly_flags:
+        # Surface assembly_wrong_merge in the histogram even though the
+        # harness did not register a delta for these rows.
+        combined["assembly_wrong_merge"] = (
+            combined.get("assembly_wrong_merge", 0) + len(assembly_flags)
+        )
+
+    if combined:
+        print("\nRoot-cause distribution (mismatches + assembly flags):")
+        for rc, n in sorted(combined.items(), key=lambda x: -x[1]):
+            tag = "  (harness-ok, live-pipeline issue)" if rc == "assembly_wrong_merge" else ""
+            print(f"  {rc:<36} {n}{tag}")
+
+    if unknown_codes:
+        print("\nWARN: unknown root_cause codes in fixture (see fixtures/schema.md):")
+        for code, n in sorted(unknown_codes.items()):
+            print(f"  {code!r:<36} {n}")
+
     print()
     return 0 if fail == 0 else 2
 

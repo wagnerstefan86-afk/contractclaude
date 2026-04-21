@@ -57,7 +57,8 @@ obligations:
 ## Enum `root_cause`
 
 Jeder Regression-Fall bekommt genau eine dieser Klassen. Sie bildet
-auf die drei Regelstellen (Matcher / Klassifikator / Eskalation) ab:
+auf die vier Regelstellen (Matcher / Klassifikator / Eskalation /
+Finding-Assembly) ab:
 
 | Code | Regelstelle | Bedeutung |
 |---|---|---|
@@ -69,7 +70,32 @@ auf die drei Regelstellen (Matcher / Klassifikator / Eskalation) ab:
 | `classifier_generic_negation` | Klassifikator | Allgemeiner `_NEGATION_NEAR_POSITIVE` blockt Limit-Satz |
 | `escalation_limits_null` | Eskalation | `all_limits_null → HIGH` in `materiality_scorer` (weil LLM die `limits`-Felder nicht gefüllt hat) |
 | `escalation_baseline_gap` | Eskalation | `baseline_gap_description` triggert `_has_explicit_gap` im Klassifikator, obwohl der Gap nur generisch ist |
+| `assembly_wrong_merge` | Finding-Assembly | Obligation ist auf Einzel-Obligation-Ebene korrekt (Harness liefert `informational`), wird aber im Live-Run per Playbook-ID-Merge in ein Risk-Finding gezogen und dadurch für den Reviewer sichtbar |
 | `ok` | — | kein Regression-Fall (Fixture-Kontext) |
+
+### Abgrenzung `assembly_wrong_merge` von Matcher/Klassifikator/Eskalation
+
+- Wenn der **Harness** auf der Einzel-Obligation `cls=informational`
+  und `pb_got=—` meldet, ist Matcher + Klassifikator für sich ok.
+  Tritt die Obligation trotzdem **im Live-Run** als Evidenz eines
+  sichtbaren Risk-Findings auf, liegt das Problem in
+  `scoring/finding_generator._group_obligations_by_risk` — konkret
+  im zweiten Merge-Pass, der Komponenten mit gemeinsamer Playbook-ID
+  zusammenführt (erweitert gelegentlich auch auf unmatched
+  Obligations via ihrer Relationen, falls eine Relation vorliegt).
+  → Code: `assembly_wrong_merge`.
+
+- Wenn der **Harness** auf der Einzel-Obligation `cls=risk` meldet,
+  obwohl der Reviewer `info` erwartet, ist einer der drei anderen
+  Regelstellen-Codes (`matcher_*`, `classifier_*`, `escalation_*`)
+  passend. Kein `assembly_wrong_merge`.
+
+- Eine Obligation kann im Live-Run gleichzeitig Evidenz in einem
+  Risk-Finding sein (assembly-bedingt) UND ein Matcher- oder
+  Klassifikator-Problem haben. In diesem Fall gewinnt die
+  Einzelfall-Diagnose: der Code, der den Status der Obligation
+  **alleine** erklärt, wird eingetragen. Der Merge-Aspekt kann als
+  Sekundär-Hinweis in `hypothesis` dokumentiert werden.
 
 ## Convention für leere Werte
 
