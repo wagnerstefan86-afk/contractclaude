@@ -391,6 +391,7 @@ def findings_list(
     materiality: str = "",
     status: str = "",
     q: str = "",
+    include_info: int = 0,
     db: Session = Depends(get_db),
 ):
     pkg = db.query(ContractPackage).filter_by(id=package_id).first()
@@ -398,12 +399,20 @@ def findings_list(
         return HTMLResponse("<h1>Paket nicht gefunden</h1>", status_code=404)
 
     run_ids = [r.id for r in db.query(AnalysisRun.id).filter_by(package_id=package_id).all()]
-    query = db.query(Finding).filter(Finding.run_id.in_(run_ids)) if run_ids else db.query(Finding).filter(False)
+    base_query = db.query(Finding).filter(Finding.run_id.in_(run_ids)) if run_ids else db.query(Finding).filter(False)
 
+    # Count informational findings for the banner (independent of filters).
+    info_count = base_query.filter(Finding.severity == "info").count() if run_ids else 0
+
+    query = base_query
     if theme:
         query = query.filter(Finding.theme == theme)
     if severity:
         query = query.filter(Finding.severity == severity)
+    elif not include_info:
+        # Default view hides informational findings. Explicit severity
+        # filter (incl. severity=info) overrides this.
+        query = query.filter(Finding.severity != "info")
     if materiality:
         query = query.filter(Finding.materiality == materiality)
     if status:
@@ -438,7 +447,10 @@ def findings_list(
         "filter_severity": severity,
         "filter_materiality": materiality,
         "filter_status": status,
-        "search_q": q})
+        "search_q": q,
+        "info_count": info_count,
+        "info_hidden": not severity and not include_info,
+        "include_info": bool(include_info)})
 
 
 # ---------------------------------------------------------------------------
@@ -470,6 +482,7 @@ def _safe_filename_part(value: str) -> str:
 def export_findings_xlsx(
     package_id: str,
     run_id: str = "",
+    include_info: int = 0,
     db: Session = Depends(get_db),
 ):
     from openpyxl import Workbook
@@ -491,16 +504,17 @@ def export_findings_xlsx(
 
     findings = []
     if run:
-        findings = (
+        q = (
             db.query(Finding)
             .options(
                 joinedload(Finding.evidences),
                 joinedload(Finding.missing_safeguards),
             )
             .filter_by(run_id=run.id)
-            .order_by(Finding.created_at.desc())
-            .all()
         )
+        if not include_info:
+            q = q.filter(Finding.severity != "info")
+        findings = q.order_by(Finding.created_at.desc()).all()
 
     wb = Workbook()
     ws = wb.active

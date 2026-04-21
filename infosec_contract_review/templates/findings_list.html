@@ -59,6 +59,18 @@
     </a>
 </div>
 
+{% if info_hidden and info_count > 0 %}
+<div class="alert alert-secondary py-2 mb-3">
+    {{ info_count }} informationale Finding(s) ausgeblendet (risikoreduzierende oder Standardklauseln).
+    <a href="?include_info=1">Alle anzeigen</a>
+</div>
+{% elif include_info and info_count > 0 %}
+<div class="alert alert-secondary py-2 mb-3">
+    Informationale Findings werden mit angezeigt.
+    <a href="?">Nur Risiko-Findings</a>
+</div>
+{% endif %}
+
 {% if findings %}
 <table class="table table-hover table-sm">
     <thead>

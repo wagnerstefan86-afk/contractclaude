@@ -22,6 +22,7 @@ from infosec_contract_review.models.run import RunStep
 from infosec_contract_review.models.segment import Segment
 from infosec_contract_review.scoring.materiality_scorer import score_obligation_materiality
 from infosec_contract_review.scoring.playbook_matcher import match_obligation_to_playbook
+from infosec_contract_review.scoring.finding_classifier import classify_group
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class FindingGenerationResult:
     obligations_grouped: int = 0
     cross_theme_findings: int = 0
     playbook_matches: int = 0
+    informational_findings: int = 0
     errors: int = 0
 
 
@@ -298,9 +300,31 @@ def generate_findings(
                 ),
             )
 
+            # Classification gate: decide if this group is a real risk
+            # finding or an informational/positive clause. Only downgrade
+            # when NO hard risk signal fires and every member reads
+            # positive. See finding_classifier.classify_group for rules.
+            classification = classify_group(
+                group_obls, playbook, missing_safeguards, relations,
+            )
+            is_informational = classification.kind == "informational"
+
             title = _build_finding_title(group_obls, playbook, theme_val)
+            if is_informational:
+                title = f"[Informativ] {title}"
             description = _build_finding_description(group_obls, playbook, theme_ms)
+            if is_informational:
+                description = (
+                    f"*{classification.reason}*\n\n" + description
+                )
             recommendation = _build_recommendation(playbook, group_obls)
+
+            if is_informational:
+                severity = FindingSeverity.INFO
+                materiality = Materiality.LOW
+            else:
+                severity = _SEVERITY_FROM_MATERIALITY.get(max_mat, FindingSeverity.MEDIUM)
+                materiality = max_mat
 
             theme_enum = Theme(theme_val) if theme_val in [t.value for t in Theme] else Theme.OTHER
 
@@ -309,8 +333,8 @@ def generate_findings(
                 theme=theme_enum,
                 title=title,
                 description=description,
-                severity=_SEVERITY_FROM_MATERIALITY.get(max_mat, FindingSeverity.MEDIUM),
-                materiality=max_mat,
+                severity=severity,
+                materiality=materiality,
                 status=FindingStatus.OPEN,
                 playbook_entry_id=playbook.id if playbook else None,
                 recommendation=recommendation,
@@ -330,6 +354,8 @@ def generate_findings(
 
             if playbook:
                 result.playbook_matches += 1
+            if is_informational:
+                result.informational_findings += 1
 
             result.findings_created += 1
             result.obligations_grouped += len(group_obls)
@@ -393,11 +419,14 @@ def generate_findings(
         "obligations_grouped": result.obligations_grouped,
         "cross_theme_findings": result.cross_theme_findings,
         "playbook_matches": result.playbook_matches,
+        "informational_findings": result.informational_findings,
     }
     db.flush()
 
     logger.info(
-        "Finding generation complete: %d findings, %d playbook matches",
-        result.findings_created, result.playbook_matches,
+        "Finding generation complete: %d findings (%d informational), %d playbook matches",
+        result.findings_created,
+        result.informational_findings,
+        result.playbook_matches,
     )
     return result

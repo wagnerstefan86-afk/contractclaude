@@ -293,9 +293,14 @@ class MatchScore:
 
 
 def _corpus_for(obligation: Obligation) -> str:
+    # Only the actual contract text is searched. baseline_gap_description
+    # is excluded on purpose: it is produced by the baseline matcher and
+    # contains generic risk phrases like "Keine Begrenzungen gefunden –
+    # unbegrenzte Pflichten entsprechen nie dem Standard", which would
+    # make positive obligations (e.g. "Maßnahmenplan innerhalb von 30
+    # Tagen") falsely match PB-AUDIT-001 via "keine begrenzung" /
+    # "unbegrenzt" substrings.
     parts = [obligation.summary or "", obligation.verbatim_quote or ""]
-    if obligation.baseline_gap_description:
-        parts.append(obligation.baseline_gap_description)
     return normalize(" ".join(parts))
 
 
