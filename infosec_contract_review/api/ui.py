@@ -12,6 +12,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import delete
 from sqlalchemy.orm import Session, joinedload
 
 from infosec_contract_review.api.ui_labels import (
@@ -29,10 +30,24 @@ from infosec_contract_review.api.ui_labels import (
     theme_label,
 )
 from infosec_contract_review.core.database import get_db
-from infosec_contract_review.models.finding import Finding, MissingSafeguard
-from infosec_contract_review.models.obligation import Obligation
-from infosec_contract_review.models.package import ContractPackage, Document
-from infosec_contract_review.models.run import AnalysisRun
+from infosec_contract_review.models.finding import (
+    Evidence,
+    Finding,
+    MissingSafeguard,
+    ReviewDecision,
+)
+from infosec_contract_review.models.obligation import Obligation, ObligationLimits
+from infosec_contract_review.models.package import (
+    ContractPackage,
+    Document,
+    DocumentPrecedenceRule,
+)
+from infosec_contract_review.models.relation import (
+    CrossThemeFindingCandidate,
+    ObligationRelation,
+)
+from infosec_contract_review.models.run import AnalysisRun, RunStep
+from infosec_contract_review.models.segment import Segment
 from infosec_contract_review.models.enums import RunStatus
 
 logger = logging.getLogger(__name__)
@@ -42,7 +57,6 @@ router = APIRouter(prefix="/ui", tags=["ui"])
 TEMPLATES_DIR = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.auto_reload = True
-templates.env.cache = None
 templates.env.cache = None
 templates.env.globals["theme_label"] = theme_label
 templates.env.globals["status_label"] = status_label
@@ -104,7 +118,7 @@ _PACKAGE_STATUS_LABELS = {
 # ---------------------------------------------------------------------------
 
 @router.get("/", response_class=HTMLResponse)
-def packages_list(request: Request, db: Session = Depends(get_db)):
+def packages_list(request: Request, msg: str = "", db: Session = Depends(get_db)):
     packages = db.query(ContractPackage).order_by(ContractPackage.created_at.desc()).all()
     pkg_data = []
     for pkg in packages:
@@ -127,7 +141,11 @@ def packages_list(request: Request, db: Session = Depends(get_db)):
             "findings_count": findings_count,
             "created_at": pkg.created_at,
         })
-    return templates.TemplateResponse(request=request, name="packages.html", context={"packages": pkg_data})
+    return templates.TemplateResponse(
+        request=request,
+        name="packages.html",
+        context={"packages": pkg_data, "msg": msg},
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -648,4 +666,204 @@ def submit_review(
         url=f"/ui/packages/{package_id}/findings/{finding_id}?review_saved=1",
         status_code=303,
     )
+
+
+# ---------------------------------------------------------------------------
+# Package delete (DB + filesystem)
+# ---------------------------------------------------------------------------
+
+
+def _is_within(child: pathlib.Path, parent: pathlib.Path) -> bool:
+    """True iff resolved child path lies inside resolved parent."""
+    try:
+        child.resolve().relative_to(parent.resolve())
+        return True
+    except (ValueError, OSError):
+        return False
+
+
+def _delete_package_cascade(pkg: ContractPackage, db: Session) -> dict:
+    """Remove package and all dependent rows, then referenced files.
+
+    Order (child → parent) is explicit to satisfy FK constraints without
+    relying on ORM cascades across the full graph.
+    """
+    pkg_id = pkg.id
+
+    doc_ids = [d.id for d in db.query(Document.id).filter_by(package_id=pkg_id).all()]
+    run_ids = [r.id for r in db.query(AnalysisRun.id).filter_by(package_id=pkg_id).all()]
+    segment_ids = (
+        [s.id for s in db.query(Segment.id).filter(Segment.document_id.in_(doc_ids)).all()]
+        if doc_ids
+        else []
+    )
+    obligation_filter = []
+    if segment_ids:
+        obligation_filter.append(Obligation.segment_id.in_(segment_ids))
+    if run_ids:
+        obligation_filter.append(Obligation.run_id.in_(run_ids))
+    obligation_ids: list[str] = []
+    if obligation_filter:
+        from sqlalchemy import or_
+        obligation_ids = [
+            o.id
+            for o in db.query(Obligation.id).filter(or_(*obligation_filter)).all()
+        ]
+    finding_ids = (
+        [f.id for f in db.query(Finding.id).filter(Finding.run_id.in_(run_ids)).all()]
+        if run_ids
+        else []
+    )
+
+    storage_paths = [
+        d.storage_path
+        for d in db.query(Document.storage_path).filter_by(package_id=pkg_id).all()
+        if d.storage_path
+    ]
+
+    # --- DB deletes, in FK-safe order --------------------------------------
+    if finding_ids or obligation_ids or segment_ids:
+        from sqlalchemy import or_
+        ev_filter = []
+        if finding_ids:
+            ev_filter.append(Evidence.finding_id.in_(finding_ids))
+        if obligation_ids:
+            ev_filter.append(Evidence.obligation_id.in_(obligation_ids))
+        if segment_ids:
+            ev_filter.append(Evidence.segment_id.in_(segment_ids))
+        db.execute(delete(Evidence).where(or_(*ev_filter)))
+
+    if finding_ids or run_ids or obligation_ids:
+        from sqlalchemy import or_
+        ms_filter = []
+        if finding_ids:
+            ms_filter.append(MissingSafeguard.finding_id.in_(finding_ids))
+        if run_ids:
+            ms_filter.append(MissingSafeguard.run_id.in_(run_ids))
+        if obligation_ids:
+            ms_filter.append(MissingSafeguard.obligation_id.in_(obligation_ids))
+        db.execute(delete(MissingSafeguard).where(or_(*ms_filter)))
+
+    if finding_ids:
+        db.execute(delete(ReviewDecision).where(ReviewDecision.finding_id.in_(finding_ids)))
+        db.execute(delete(Finding).where(Finding.id.in_(finding_ids)))
+
+    if obligation_ids:
+        db.execute(
+            delete(ObligationLimits).where(
+                ObligationLimits.obligation_id.in_(obligation_ids)
+            )
+        )
+
+    if obligation_ids or run_ids:
+        from sqlalchemy import or_
+        rel_filter = []
+        if obligation_ids:
+            rel_filter.append(ObligationRelation.obligation_a_id.in_(obligation_ids))
+            rel_filter.append(ObligationRelation.obligation_b_id.in_(obligation_ids))
+        if run_ids:
+            rel_filter.append(ObligationRelation.run_id.in_(run_ids))
+        db.execute(delete(ObligationRelation).where(or_(*rel_filter)))
+
+    if run_ids:
+        db.execute(
+            delete(CrossThemeFindingCandidate).where(
+                CrossThemeFindingCandidate.run_id.in_(run_ids)
+            )
+        )
+
+    if obligation_ids:
+        db.execute(delete(Obligation).where(Obligation.id.in_(obligation_ids)))
+
+    if run_ids:
+        db.execute(delete(RunStep).where(RunStep.run_id.in_(run_ids)))
+        db.execute(delete(AnalysisRun).where(AnalysisRun.id.in_(run_ids)))
+
+    if segment_ids:
+        db.execute(delete(Segment).where(Segment.id.in_(segment_ids)))
+
+    db.execute(
+        delete(DocumentPrecedenceRule).where(
+            DocumentPrecedenceRule.package_id == pkg_id
+        )
+    )
+
+    if doc_ids:
+        db.execute(delete(Document).where(Document.id.in_(doc_ids)))
+
+    db.execute(delete(ContractPackage).where(ContractPackage.id == pkg_id))
+    db.commit()
+
+    # --- Filesystem cleanup ------------------------------------------------
+    upload_root = pathlib.Path(UPLOAD_DIR)
+    files_removed = 0
+    files_missing = 0
+    files_skipped = 0
+    for raw_path in storage_paths:
+        p = pathlib.Path(raw_path)
+        if not _is_within(p, upload_root):
+            logger.warning(
+                "Skipping file outside UPLOAD_DIR: %s (root=%s)", raw_path, upload_root
+            )
+            files_skipped += 1
+            continue
+        try:
+            p.unlink()
+            files_removed += 1
+        except FileNotFoundError:
+            logger.info("File already missing, skipping: %s", raw_path)
+            files_missing += 1
+        except OSError as e:
+            logger.warning("Failed to delete file %s: %s", raw_path, e)
+            files_skipped += 1
+
+    # Optional: prune the package-specific upload subdir if empty
+    pkg_dir = upload_root / pkg_id
+    if _is_within(pkg_dir, upload_root) and pkg_dir.is_dir():
+        try:
+            next(pkg_dir.iterdir())
+        except StopIteration:
+            try:
+                pkg_dir.rmdir()
+            except OSError as e:
+                logger.warning("Could not remove empty dir %s: %s", pkg_dir, e)
+        except OSError:
+            pass
+
+    return {
+        "package_id": pkg_id,
+        "documents": len(doc_ids),
+        "runs": len(run_ids),
+        "segments": len(segment_ids),
+        "obligations": len(obligation_ids),
+        "findings": len(finding_ids),
+        "files_removed": files_removed,
+        "files_missing": files_missing,
+        "files_skipped": files_skipped,
+    }
+
+
+@router.post("/packages/{package_id}/delete")
+def ui_delete_package(package_id: str, db: Session = Depends(get_db)):
+    pkg = db.query(ContractPackage).filter_by(id=package_id).first()
+    if not pkg:
+        return RedirectResponse(
+            url="/ui/?msg=Paket+nicht+gefunden",
+            status_code=303,
+        )
+
+    pkg_name = pkg.name
+    try:
+        summary = _delete_package_cascade(pkg, db)
+    except Exception as e:
+        db.rollback()
+        logger.exception("Failed to delete package %s", package_id)
+        return RedirectResponse(
+            url=f"/ui/packages/{package_id}?msg=Löschen+fehlgeschlagen:+{str(e)[:80]}",
+            status_code=303,
+        )
+
+    logger.info("UI: Deleted package %s (%s): %s", package_id, pkg_name, summary)
+    msg = f"Paket+'{pkg_name}'+gelöscht+({summary['documents']}+Dokumente,+{summary['findings']}+Findings,+{summary['files_removed']}+Dateien)"
+    return RedirectResponse(url=f"/ui/?msg={msg}", status_code=303)
 

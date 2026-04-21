@@ -5,6 +5,9 @@
     <h2>Vertragspakete</h2>
     <a href="/ui/packages/new" class="btn btn-primary">+ Neues Vertragspaket anlegen</a>
 </div>
+{% if msg %}
+<div class="alert alert-info">{{ msg }}</div>
+{% endif %}
 {% if packages %}
 <table class="table table-hover">
     <thead>

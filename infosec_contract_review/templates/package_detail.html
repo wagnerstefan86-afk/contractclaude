@@ -113,4 +113,20 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Danger zone: delete package -->
+<div class="card mb-3 border-danger">
+    <div class="card-header text-danger"><strong>Paket löschen</strong></div>
+    <div class="card-body">
+        <p class="text-muted mb-2">
+            Löscht das Paket unwiderruflich: alle Dokumente, Analysen, Findings und
+            hochgeladene Dateien werden entfernt.
+        </p>
+        <form method="post"
+              action="/ui/packages/{{ pkg.id }}/delete"
+              onsubmit="return confirm('Dieses Paket inklusive aller Dokumente, Analysen und Findings wird unwiderruflich gelöscht. Fortfahren?');">
+            <button type="submit" class="btn btn-danger">Paket löschen</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
