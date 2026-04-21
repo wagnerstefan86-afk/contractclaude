@@ -1,0 +1,27 @@
+# ======================================================================
+# GS-03 (mild / Managed-Print-ähnlich) — Live-Fixture
+#
+# Phase-2a-Repair: GS-03 zeigt im echten Container-Run zu viele
+# sichtbare Hoch/Hoch-Risk-Findings (11 Findings bei 15 Obligations).
+# Die deterministische Verifikation in commit 261a52b traf 0 Risk auf
+# idealisierten Texten — Wortwahl der realen LLM-Extraktion divergiert.
+#
+# BITTE BEFÜLLEN aus dem Container:
+#   python scripts/dump_run_fixtures.py \
+#       --run-id <GS-03-run-id> --contract-id GS-03 \
+#       --out eval/gold_set/fixtures/GS-03.yaml
+#
+# Danach pro Obligation:
+#   - expected_outcome (risk|info|suppress)
+#   - expected_playbook (PB-XXX oder null)
+#   - regression_case (true für die 5–6 ausgewählten False Positives)
+#   - hypothesis + root_cause (siehe schema.md)
+# ======================================================================
+contract_id: GS-03
+run_id: ""
+git_sha: ""
+captured_at: ""
+source: "live-container"
+active_lenses: [LENS-AUDIT, LENS-INCIDENT, LENS-SLA]
+
+obligations: []

@@ -1,0 +1,13 @@
+# GS-02 (harter SLA-Vertrag) — Live-Fixture.
+# Ziel dieser Fixture: 2–3 Obligations als harte Risiken-Anker
+# (99,99 % / unrealistische Reaktionszeit / ungedeckelte Strafe),
+# die nach einem Repair weiterhin als `risk` mit korrektem Playbook
+# sichtbar bleiben MÜSSEN. Regression-Anker, keine FP-Suche.
+contract_id: GS-02
+run_id: ""
+git_sha: ""
+captured_at: ""
+source: "live-container"
+active_lenses: [LENS-AUDIT, LENS-INCIDENT, LENS-SLA]
+
+obligations: []

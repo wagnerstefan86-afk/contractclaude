@@ -1,0 +1,29 @@
+# Live-Fixture-Template — siehe schema.md
+contract_id: GS-XX
+run_id: ""                  # analysis_runs.id aus DB
+git_sha: ""                 # git rev-parse --short HEAD zum Zeitpunkt des Runs
+captured_at: ""             # YYYY-MM-DD
+source: "live-container"
+active_lenses: [LENS-AUDIT, LENS-INCIDENT, LENS-SLA]
+
+obligations:
+  # Pro Obligation eine Struktur wie diese:
+  - obligation_id: ""
+    lens: ""
+    theme: ""
+    summary: ""
+    verbatim_quote: ""
+    baseline_gap_description: ""
+
+    current_finding_id: ""
+    current_severity: ""          # info|low|medium|high|critical
+    current_materiality: ""       # low|medium|high|critical
+    current_playbook_id: null     # PB-XXX oder null
+    current_finding_title: ""
+
+    expected_outcome: risk        # risk | info | suppress
+    expected_playbook: null
+    regression_case: false
+
+    hypothesis: ""
+    root_cause: ok                # siehe schema.md

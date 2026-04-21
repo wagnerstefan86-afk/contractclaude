@@ -1,0 +1,14 @@
+# GS-01-kalib (Kalibrierungsvertrag) — Live-Fixture.
+# Ziel: 1–2 stabile Kernfindings als Regression-Anker
+# (z. B. "Meldepflicht jedes Security-Event", "Regulatorische
+# Meldepflichten durchgereicht", "Unbegrenzte Auditfrequenz").
+# Diese dürfen nach Repair NICHT verschwinden und den Playbook-Match
+# nicht verlieren.
+contract_id: GS-01-kalib
+run_id: ""
+git_sha: ""
+captured_at: ""
+source: "live-container"
+active_lenses: [LENS-AUDIT, LENS-INCIDENT, LENS-SLA]
+
+obligations: []
