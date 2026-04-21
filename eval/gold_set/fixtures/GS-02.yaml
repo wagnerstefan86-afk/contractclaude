@@ -255,11 +255,11 @@ obligations:
     current_playbook_id: "PB-SLA-004"
     current_finding_title: |-
       SLA-Machbarkeit: Unrealistisch kurze Reaktions- oder Wiederherstellungszeiten
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: risk
+    expected_playbook: "PB-SLA-004"
+    regression_case: true
+    hypothesis: "P1 10 Minuten Reaktionszeit — harter Tight-Time-Anker, muss Risk mit PB-SLA-004 bleiben"
+    root_cause: ok
 
   - obligation_id: "24cb25f8-046f-4536-b7c6-135286e0961b"
     lens: "LENS-SLA"
@@ -276,11 +276,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       SLA-Machbarkeit: 2 Pflichten ohne Playbook-Zuordnung
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: risk
+    expected_playbook: "PB-SLA-005"
+    regression_case: true
+    hypothesis: "Explizit ungedeckelte Vertragsstrafe — harter Pönale-Anker, muss Risk mit PB-SLA-005 bleiben"
+    root_cause: ok
 
   - obligation_id: "4f3b3585-c0d2-46e4-afc4-319f20a942c1"
     lens: "LENS-SLA"
@@ -339,11 +339,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       SLA-Machbarkeit: Die vereinbarten Service Levels gelten uneingeschränkt auch während der Durchführung von Notfall- und Disaster-Recovery-
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: risk
+    expected_playbook: "PB-SLA-003"
+    regression_case: true
+    hypothesis: "SLA gelten uneingeschränkt auch während DR-Maßnahmen — DR/BCM-Suspension ausgeschlossen, harter PB-SLA-003-Anker"
+    root_cause: ok
 
   - obligation_id: "92c53269-b2f6-448b-9d18-5475a6665440"
     lens: "LENS-SLA"
@@ -444,8 +444,8 @@ obligations:
     current_playbook_id: "PB-SLA-002"
     current_finding_title: |-
       SLA-Machbarkeit: Verfügbarkeit >= 99.99% oder Transaktionsmessung
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: risk
+    expected_playbook: "PB-SLA-002"
+    regression_case: true
+    hypothesis: "99,99% Verfügbarkeit auf Monatsbasis — harter Verfügbarkeits-Anker, muss Risk mit PB-SLA-002 bleiben"
+    root_cause: ok

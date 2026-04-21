@@ -234,11 +234,11 @@ obligations:
     current_playbook_id: "PB-INC-003"
     current_finding_title: |-
       Incident Reporting und Meldepflichten: Regulatorische Meldepflichten durchgereicht
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: risk
+    expected_playbook: "PB-INC-003"
+    regression_case: true
+    hypothesis: "Regulatorische Meldepflichten gegenüber Aufsichtsbehörden durchgereicht — harter PB-INC-003-Anker"
+    root_cause: ok
 
   - obligation_id: "52c1bf2d-ed8e-4692-806c-4b3029a82429"
     lens: "LENS-INCIDENT"
@@ -276,11 +276,11 @@ obligations:
     current_playbook_id: "PB-INC-002"
     current_finding_title: |-
       Incident Reporting und Meldepflichten: Meldepflicht für jedes Security-Event
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: risk
+    expected_playbook: "PB-INC-002"
+    regression_case: true
+    hypothesis: "Meldepflicht für jedes Security-Event ohne Schwellenwert; Vorauswahl/Filterung unzulässig — harter PB-INC-002-Anker"
+    root_cause: ok
 
   - obligation_id: "d72a926f-6f3e-4a70-aef0-ca5b88511fce"
     lens: "LENS-INCIDENT"

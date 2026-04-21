@@ -24,11 +24,11 @@ obligations:
     current_playbook_id: "PB-AUDIT-001"
     current_finding_title: |-
       Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "Begrenzung via 20 Werktage Vorlaufzeit wird vom Matcher nicht sauber als Negativsignal erkannt"
+    root_cause: matcher_negative_gap
 
   - obligation_id: "703ddfb1-f056-4131-8ba7-21d141ad67e3"
     lens: "LENS-AUDIT"
@@ -45,11 +45,11 @@ obligations:
     current_playbook_id: "PB-AUDIT-001"
     current_finding_title: |-
       Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "Milde Audit-Klausel (einmal jährlich), wird im Live-Run in PB-AUDIT-001-Risk-Cluster hineingezogen"
+    root_cause: assembly_wrong_merge
 
   - obligation_id: "9bbdfb8c-c340-4725-b463-06fa2d5afe6b"
     lens: "LENS-AUDIT"
@@ -66,11 +66,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       Audit- und Prüfungsrechte: Der Aufwand für die Auditunterstützung wird nach tatsächlichem Aufwand auf Basis der vereinbarten Tagessätze abgerechnet
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "Standard-Kostenmodell (Aufwand/Tagessätze) wird nicht als limitierende/positive Klausel erkannt"
+    root_cause: classifier_positive_gap
 
   - obligation_id: "abdcd052-973e-4ba3-9b64-803f15376a79"
     lens: "LENS-AUDIT"
@@ -108,11 +108,11 @@ obligations:
     current_playbook_id: "PB-AUDIT-001"
     current_finding_title: |-
       Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "Drittaudit nur mit vorheriger schriftlicher Zustimmung — Einzel-Obligation harmlos, wird im Live-Run in Risk-Finding hineingezogen"
+    root_cause: assembly_wrong_merge
 
   - obligation_id: "c2f57123-4961-46b3-b138-4af0944668c0"
     lens: "LENS-AUDIT"
@@ -171,11 +171,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] SLA-Machbarkeit: Für Priorität 3 beträgt die Reaktionszeit am nächsten Werktag.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "P3 nächster Werktag — Standardzeit, Einzel-Obligation bereits info; Cluster-Sichtbarkeit im Live-Run ist das Problem"
+    root_cause: assembly_wrong_merge
 
   - obligation_id: "17b2a455-a43d-4ebe-9655-813b40d58351"
     lens: "LENS-SLA"
@@ -234,11 +234,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] SLA-Machbarkeit: Für Priorität 2 beträgt die Reaktionszeit acht (8) Stunden.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "P2 8 Stunden — milde Prioritätszeit, Einzel-Obligation bereits info; Cluster-Sichtbarkeit im Live-Run ist das Problem"
+    root_cause: assembly_wrong_merge
 
   - obligation_id: "5929db6c-3061-4511-8394-f22654de54dd"
     lens: "LENS-SLA"
@@ -276,11 +276,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] SLA-Machbarkeit: Im Falle eines ausgerufenen Disaster-Recovery- oder Business-Continuity-Ereignisses werden die SLA-Verpflichtungen für d
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "SLA-Suspension bei DR/BCM explizit geregelt — Einzel-Obligation bereits korrekt info, fällt aber potenziell in Assembly-Merge zurück"
+    root_cause: assembly_wrong_merge
 
   - obligation_id: "c5521e4c-ab56-4b38-a629-dc3c96a1fa22"
     lens: "LENS-SLA"
@@ -297,11 +297,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       SLA-Machbarkeit: Geplante Wartungsfenster (Samstag 22:00 bis Sonntag 06:00 Uhr) werden aus der Berechnung der Verfügbarkeit herausgerechn
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "Wartungsfenster werden explizit aus der Verfügbarkeitsberechnung herausgerechnet — standardnahe SLA-Begrenzung nicht erkannt"
+    root_cause: classifier_positive_gap
 
   - obligation_id: "ee4f8b02-1f8e-451c-91ed-76c879b11677"
     lens: "LENS-SLA"
@@ -318,8 +318,8 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       SLA-Machbarkeit: 3 Pflichten ohne Playbook-Zuordnung
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    expected_outcome: info
+    expected_playbook: null
+    regression_case: true
+    hypothesis: "Gedeckelte Service-Credit-Klausel (max 10 % des Monatsentgelts) wird nicht als Begrenzung erkannt"
+    root_cause: classifier_positive_gap
