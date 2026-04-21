@@ -1,27 +1,325 @@
-# ======================================================================
-# GS-03 (mild / Managed-Print-ähnlich) — Live-Fixture
-#
-# Phase-2a-Repair: GS-03 zeigt im echten Container-Run zu viele
-# sichtbare Hoch/Hoch-Risk-Findings (11 Findings bei 15 Obligations).
-# Die deterministische Verifikation in commit 261a52b traf 0 Risk auf
-# idealisierten Texten — Wortwahl der realen LLM-Extraktion divergiert.
-#
-# BITTE BEFÜLLEN aus dem Container:
-#   python scripts/dump_run_fixtures.py \
-#       --run-id <GS-03-run-id> --contract-id GS-03 \
-#       --out eval/gold_set/fixtures/GS-03.yaml
-#
-# Danach pro Obligation:
-#   - expected_outcome (risk|info|suppress)
-#   - expected_playbook (PB-XXX oder null)
-#   - regression_case (true für die 5–6 ausgewählten False Positives)
-#   - hypothesis + root_cause (siehe schema.md)
-# ======================================================================
-contract_id: GS-03
-run_id: ""
+# Auto-dumped by scripts/dump_run_fixtures.py — please fill the
+# Reviewer fields (expected_outcome, regression_case, hypothesis,
+# root_cause) per obligation. See fixtures/schema.md.
+contract_id: "GS-03"
+run_id: "d124a240-10ba-4b5e-8450-d46dfd1da257"
 git_sha: ""
-captured_at: ""
+captured_at: "2026-04-21"
 source: "live-container"
-active_lenses: [LENS-AUDIT, LENS-INCIDENT, LENS-SLA]
+active_lenses: ['LENS-AUDIT', 'LENS-INCIDENT', 'LENS-SLA']
 
-obligations: []
+obligations:
+  - obligation_id: "263d9425-46dc-45c0-af47-bfe34e36631d"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Das Audit ist mit einer Vorlaufzeit von mindestens zwanzig (20) Werktagen schriftlich anzukündigen.
+    verbatim_quote: |-
+      Das Audit ist mit einer Vorlaufzeit von mindestens zwanzig (20) Werktagen schriftlich anzukündigen.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "b5d64f48-fd60-465e-96ff-9961fe963645"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-AUDIT-001"
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "703ddfb1-f056-4131-8ba7-21d141ad67e3"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftraggeber ist berechtigt, einmal jährlich ein Audit beim Auftragnehmer durchzuführen.
+    verbatim_quote: |-
+      Der Auftraggeber ist berechtigt, einmal jährlich ein Audit beim Auftragnehmer durchzuführen.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "b5d64f48-fd60-465e-96ff-9961fe963645"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-AUDIT-001"
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "9bbdfb8c-c340-4725-b463-06fa2d5afe6b"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Aufwand für die Auditunterstützung wird nach tatsächlichem Aufwand auf Basis der vereinbarten Tagessätze abgerechnet.
+    verbatim_quote: |-
+      Der Aufwand für die Auditunterstützung wird nach tatsächlichem Aufwand auf Basis der vereinbarten Tagessätze abgerechnet.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "3ad8fadc-3969-4cab-bd0e-7cc13ccc0ff7"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Der Aufwand für die Auditunterstützung wird nach tatsächlichem Aufwand auf Basis der vereinbarten Tagessätze abgerechnet
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "abdcd052-973e-4ba3-9b64-803f15376a79"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftragnehmer kann die Zustimmung nur aus wichtigem Grund verweigern, insbesondere zum Schutz der Mandantentrennung.
+    verbatim_quote: |-
+      Der Auftragnehmer kann die Zustimmung nur aus wichtigem Grund verweigern, insbesondere zum Schutz der Mandantentrennung.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "b5d64f48-fd60-465e-96ff-9961fe963645"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-AUDIT-001"
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "b46e95f3-9c38-45a2-a86c-d5f12f558e77"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Audits durch Dritte sind nur mit vorheriger schriftlicher Zustimmung des Auftragnehmers zulässig.
+    verbatim_quote: |-
+      Audits durch Dritte sind nur mit vorheriger schriftlicher Zustimmung des Auftragnehmers zulässig.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "b5d64f48-fd60-465e-96ff-9961fe963645"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-AUDIT-001"
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "c2f57123-4961-46b3-b138-4af0944668c0"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftragnehmer stellt die für das Audit erforderlichen Unterlagen und Auskünfte zur Verfügung.
+    verbatim_quote: |-
+      Der Auftragnehmer stellt die für das Audit erforderlichen Unterlagen und Auskünfte zur Verfügung.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "ca566513-3907-4819-a831-3ba78a003fe1"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Der Auftragnehmer stellt die für das Audit erforderlichen Unterlagen und Auskünfte zur Verfügung.
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "20b0eb9b-c1cf-4da0-b9c3-764e4bc07550"
+    lens: "LENS-INCIDENT"
+    theme: "incident_reporting"
+    summary: |-
+      Der Auftragnehmer unterstützt den Auftraggeber bei der Erfüllung seiner Meldepflichten gegenüber Aufsichtsbehörden durch zeitnahe Bereitstellung der erforderlichen Informationen.
+    verbatim_quote: |-
+      Der Auftragnehmer unterstützt den Auftraggeber bei der Erfüllung seiner Meldepflichten gegenüber Aufsichtsbehörden durch zeitnahe Bereitstellung der erforderlichen Informationen.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "8cfe101c-a673-456b-863f-635d8f8329f1"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-INC-003"
+    current_finding_title: |-
+      Incident Reporting und Meldepflichten: Regulatorische Meldepflichten durchgereicht
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "040c4b3c-160e-462f-8e7a-74ddfd12dee5"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Für Priorität 3 beträgt die Reaktionszeit am nächsten Werktag.
+    verbatim_quote: |-
+      Für Priorität 3 beträgt die Reaktionszeit am nächsten Werktag.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "819d70e6-9a43-4d37-bbaf-fbc53b0ea529"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] SLA-Machbarkeit: Für Priorität 3 beträgt die Reaktionszeit am nächsten Werktag.
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "17b2a455-a43d-4ebe-9655-813b40d58351"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Für Störungen der Priorität 1 beträgt die maximale Reaktionszeit vier (4) Stunden während der Servicezeiten (Montag bis Freitag, 08:00 bis 18:00 Uhr).
+    verbatim_quote: |-
+      Für Störungen der Priorität 1 beträgt die maximale Reaktionszeit vier (4) Stunden während der Servicezeiten (Montag bis Freitag, 08:00 bis 18:00 Uhr).
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "f9455730-5c14-4feb-82b9-ae27461d3253"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      SLA-Machbarkeit: Für Störungen der Priorität 1 beträgt die maximale Reaktionszeit vier (4) Stunden während der Servicezeiten (Montag bis 
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "1eb6e3c1-3f14-481e-bd6b-eb8e4b42dbbb"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Der Auftragnehmer gewährleistet eine Verfügbarkeit der Managed Print Services von mindestens 99,5 Prozent, gemessen auf Monatsbasis.
+    verbatim_quote: |-
+      Der Auftragnehmer gewährleistet eine Verfügbarkeit der Managed Print Services von mindestens 99,5 Prozent, gemessen auf Monatsbasis.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "90cd7dde-2fd2-4ed2-a816-608dc569ac8c"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      SLA-Machbarkeit: 3 Pflichten ohne Playbook-Zuordnung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "3275e365-0b68-4df8-b54f-5915a578eafe"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Für Priorität 2 beträgt die Reaktionszeit acht (8) Stunden.
+    verbatim_quote: |-
+      Für Priorität 2 beträgt die Reaktionszeit acht (8) Stunden.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "3b206b60-d100-4e37-a5af-5eb61fdc5879"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] SLA-Machbarkeit: Für Priorität 2 beträgt die Reaktionszeit acht (8) Stunden.
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "5929db6c-3061-4511-8394-f22654de54dd"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Bei Unterschreitung der vereinbarten Verfügbarkeit gewährt der Auftragnehmer dem Auftraggeber eine Gutschrift (Service Credit) in Höhe von 5 Prozent der monatlichen Vergütung je angefangene 0,1 Prozentpunkte Unterschreitung.
+    verbatim_quote: |-
+      Bei Unterschreitung der vereinbarten Verfügbarkeit gewährt der Auftragnehmer dem Auftraggeber eine Gutschrift (Service Credit) in Höhe von 5 Prozent der monatlichen Vergütung je angefangene 0,1 Prozentpunkte Unterschreitung.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "90cd7dde-2fd2-4ed2-a816-608dc569ac8c"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      SLA-Machbarkeit: 3 Pflichten ohne Playbook-Zuordnung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "7b5ae0bd-72a9-4518-b2ae-83b451fe6d7d"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Im Falle eines ausgerufenen Disaster-Recovery- oder Business-Continuity-Ereignisses werden die SLA-Verpflichtungen für die Dauer des Notfallbetriebs ausgesetzt.
+    verbatim_quote: |-
+      Im Falle eines ausgerufenen Disaster-Recovery- oder Business-Continuity-Ereignisses werden die SLA-Verpflichtungen für die Dauer des Notfallbetriebs ausgesetzt.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "7ef411a6-01d8-457f-a5b0-ebb1069ba421"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] SLA-Machbarkeit: Im Falle eines ausgerufenen Disaster-Recovery- oder Business-Continuity-Ereignisses werden die SLA-Verpflichtungen für d
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "c5521e4c-ab56-4b38-a629-dc3c96a1fa22"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Geplante Wartungsfenster (Samstag 22:00 bis Sonntag 06:00 Uhr) werden aus der Berechnung der Verfügbarkeit herausgerechnet.
+    verbatim_quote: |-
+      Geplante Wartungsfenster (Samstag 22:00 bis Sonntag 06:00 Uhr) werden aus der Berechnung der Verfügbarkeit herausgerechnet.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "f790f782-f740-47fe-873c-273c45c81c35"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      SLA-Machbarkeit: Geplante Wartungsfenster (Samstag 22:00 bis Sonntag 06:00 Uhr) werden aus der Berechnung der Verfügbarkeit herausgerechn
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "ee4f8b02-1f8e-451c-91ed-76c879b11677"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Die Gutschrift ist auf maximal 10 Prozent der monatlichen Vergütung begrenzt.
+    verbatim_quote: |-
+      Die Gutschrift ist auf maximal 10 Prozent der monatlichen Vergütung begrenzt.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "90cd7dde-2fd2-4ed2-a816-608dc569ac8c"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      SLA-Machbarkeit: 3 Pflichten ohne Playbook-Zuordnung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
