@@ -1,0 +1,2 @@
+contract_id,run_id,git_sha,finding_id,finding_title,theme,lens,severity,materiality,playbook_id,expected_outcome,actual_outcome,error_class,keep_merge_split_decision,evidence_ok,reviewer_visible,comment
+GS-01-kalib,,,,,,,,,,,,,,,,
