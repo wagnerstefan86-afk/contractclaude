@@ -107,24 +107,50 @@ def _group_obligations_by_risk(
     playbook_entries: list[PlaybookEntry],
     relations: list[ObligationRelation],
 ) -> list[tuple[list[Obligation], PlaybookEntry | None]]:
-    """Group obligations by connected components (via relations) then by playbook match.
+    """Group obligations into findings.
 
-    Grouping priority:
-    1. Connected components via supplements/specifies/references/tightens relations
-    2. Within each component, try playbook match on the group
-    3. Ungrouped singletons get individual playbook matching
+    Two-pass grouping:
+    1. Build connected components via supplements/specifies/references/
+       tightens relations (LLM-provided structural signal).
+    2. Merge components that resolve to the SAME playbook entry. This
+       catches near-duplicate obligations that the LLM did not link
+       explicitly but that point at the identical risk pattern (e.g.
+       two paragraphs both describing unlimited audit frequency).
+
+    Grouping only merges via playbook identity, never via similarity of
+    surface text. That keeps the deduplication conservative: obligations
+    that matched different playbook entries remain separate, and
+    unmatched obligations stay as singletons.
     """
     components = _build_connected_components(obligations, relations)
 
-    groups: list[tuple[list[Obligation], PlaybookEntry | None]] = []
+    # Pass 1: determine a playbook match per component (match any member).
+    component_matches: list[tuple[list[Obligation], PlaybookEntry | None]] = []
     for component in components:
-        # Try playbook match for any obligation in the component
-        pb_match = None
+        pb_match: PlaybookEntry | None = None
         for obl in component:
             pb_match = match_obligation_to_playbook(obl, playbook_entries)
             if pb_match:
                 break
-        groups.append((component, pb_match))
+        component_matches.append((component, pb_match))
+
+    # Pass 2: merge components that share the same playbook entry.
+    merged_by_playbook: dict[str, tuple[list[Obligation], PlaybookEntry]] = {}
+    unmatched: list[tuple[list[Obligation], PlaybookEntry | None]] = []
+    for component, pb in component_matches:
+        if pb is None:
+            unmatched.append((component, None))
+            continue
+        key = pb.id
+        if key in merged_by_playbook:
+            merged_by_playbook[key][0].extend(component)
+        else:
+            merged_by_playbook[key] = (list(component), pb)
+
+    groups: list[tuple[list[Obligation], PlaybookEntry | None]] = []
+    for obls, pb in merged_by_playbook.values():
+        groups.append((obls, pb))
+    groups.extend(unmatched)
 
     return groups
 
