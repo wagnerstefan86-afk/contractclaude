@@ -254,12 +254,12 @@ obligations:
     current_materiality: "high"
     current_playbook_id: null
     current_finding_title: |-
-      SLA-Machbarkeit: Für Störungen der Priorität 1 beträgt die maximale Reaktionszeit vier (4) Stunden während der Servicezeiten (Montag bis 
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+      SLA-Machbarkeit: Für Störungen der Priorität 1 beträgt die maximale Reaktionszeit vier (4) Stunden während der Servicezeiten (Montag bis
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
     expected_playbook: null         #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "P1 4h während der Servicezeiten: Time-window-limit (Geschäftszeiten-Variante Servicezeiten) — Phase-2a.2-Fix ergänzt '_EXPLICIT_LIMITS_TIMEWINDOW'"
+    root_cause: classifier_positive_gap  # see schema.md       <-- Reviewer
 
   - obligation_id: "855cafcc-bfc2-47ee-8176-a34a090969c3"
     lens: "LENS-SLA"

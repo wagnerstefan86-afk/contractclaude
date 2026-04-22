@@ -25,6 +25,13 @@ from __future__ import annotations
 import argparse
 import sys
 from collections import defaultdict
+from pathlib import Path
+
+# Make the project importable when run from repo root.
+HERE = Path(__file__).resolve()
+ROOT = HERE.parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from sqlalchemy.orm import joinedload
 

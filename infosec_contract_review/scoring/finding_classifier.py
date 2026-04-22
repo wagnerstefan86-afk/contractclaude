@@ -161,6 +161,14 @@ _EXPLICIT_LIMITS_TIMEWINDOW = (
     "während üblicher geschäftszeiten", "zu üblichen geschäftszeiten",
     "innerhalb der geschäftszeiten", "innerhalb normaler geschäftszeiten",
     "during business hours", "during normal business hours",
+    # Servicezeiten is the contract-speak variant of Geschäftszeiten.
+    # GS-03 live-run showed "P1 4h während der Servicezeiten" as visible
+    # high risk even though the time window IS explicitly bounded.
+    "während der servicezeiten", "während servicezeiten",
+    "innerhalb der servicezeiten", "innerhalb servicezeiten",
+    "zu servicezeiten", "zu den servicezeiten",
+    "während der service-zeiten", "während service-zeiten",
+    "during service hours",
 )
 _EXPLICIT_LIMITS_CONSENT = (
     "mit zustimmung", "mit schriftlicher zustimmung",
@@ -301,6 +309,8 @@ _EXPLICIT_LIMIT_RISK_AMPLIFIERS = (
     "jederzeit", "anytime",
     "ohne ankündigung", "ohne vorlaufzeit",
     "outside business hours", "unangekündigt",
+    "außerhalb der servicezeiten", "außerhalb der geschäftszeiten",
+    "außerhalb servicezeiten", "außerhalb geschäftszeiten",
     "ohne zustimmung", "ohne genehmigung", "without consent",
     "nicht ausgenommen", "nicht ausgesetzt",
     "nicht suspendiert",
