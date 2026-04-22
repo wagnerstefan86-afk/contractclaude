@@ -24,11 +24,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       Audit- und Prüfungsrechte: Der Aufwand für die Auditunterstützung wird nach tatsächlichem Aufwand auf Basis der vereinbarten Tagessätze abgerechnet
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "Cost-model-Klausel: 'nach tatsächlichem Aufwand auf Basis der vereinbarten Tagessätze' fehlt in _EXPLICIT_LIMITS_COST_MODEL (Phase-2a-Fix)"                  #                          <-- Reviewer
+    root_cause: classifier_positive_gap                  # see schema.md            <-- Reviewer
 
   - obligation_id: "53b24136-4600-4b9e-ada6-b4f796453dc1"
     lens: "LENS-AUDIT"
@@ -87,11 +87,11 @@ obligations:
     current_playbook_id: "PB-AUDIT-001"
     current_finding_title: |-
       Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "'einmal jährlich' → explicit_limit (FREQUENCY) im Harness. Im Live-Run via Relations-Merge in Risk-Cluster — Verhalten korrekt (Buyer-Restriction), Harness kann es nicht reproduzieren."                  #                          <-- Reviewer
+    root_cause: assembly_wrong_merge                  # see schema.md            <-- Reviewer
 
   - obligation_id: "c1257bfd-7afc-44b7-bc23-28ad0df52733"
     lens: "LENS-AUDIT"
@@ -108,11 +108,11 @@ obligations:
     current_playbook_id: "PB-AUDIT-001"
     current_finding_title: |-
       Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "'vorheriger schriftlicher Zustimmung' → explicit_limit (CONSENT). Im Live-Run über Relations-Merge in PB-AUDIT-001-Cluster gezogen."                  #                          <-- Reviewer
+    root_cause: assembly_wrong_merge                  # see schema.md            <-- Reviewer
 
   - obligation_id: "d570d92b-9bde-4231-a034-54a0a3350145"
     lens: "LENS-AUDIT"
@@ -129,11 +129,11 @@ obligations:
     current_playbook_id: "PB-AUDIT-001"
     current_finding_title: |-
       Audit- und Prüfungsrechte: Unbegrenztes Auditrecht ohne Vorlaufzeit und Häufigkeitslimit
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "Notice-Period: 'vorlaufzeit von mindestens' fehlt in PB-AUDIT-001 negative_any und _EXPLICIT_LIMITS_NOTICE (Phase-2a-Fix)"                  #                          <-- Reviewer
+    root_cause: matcher_negative_gap                  # see schema.md            <-- Reviewer
 
   - obligation_id: "1bbd6b30-d01a-407f-9b0c-f830df2907ac"
     lens: "LENS-INCIDENT"
@@ -213,11 +213,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       SLA-Machbarkeit: 2 Pflichten ohne Playbook-Zuordnung
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "Penalty-Cap: 'auf maximal' fehlt in _EXPLICIT_LIMITS_PENALTY_CAP (Phase-2a-Fix)"                  #                          <-- Reviewer
+    root_cause: classifier_positive_gap                  # see schema.md            <-- Reviewer
 
   - obligation_id: "4b91166f-eb59-4d68-a814-dd612ce8b076"
     lens: "LENS-SLA"
@@ -234,11 +234,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       SLA-Machbarkeit: Geplante Wartungsfenster (Samstag 22:00 bis Sonntag 06:00 Uhr) werden aus der Berechnung der Verfügbarkeit herausgerechn
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "Maintenance-Exclusion: 'aus der Berechnung der Verfügbarkeit herausgerechnet' fehlt in _EXPLICIT_LIMITS_MAINTENANCE_EXCLUDED (Phase-2a-Fix)"                  #                          <-- Reviewer
+    root_cause: classifier_positive_gap                  # see schema.md            <-- Reviewer
 
   - obligation_id: "4c473a3c-43dd-4b29-9ddb-f33912581ce1"
     lens: "LENS-SLA"
@@ -297,10 +297,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] SLA-Machbarkeit: Für Störungen der Priorität 3 beträgt die Reaktionszeit am nächsten Werktag.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'Priorität 3' in _EXPLICIT_LIMITS_PRIORITY_MATRIX → korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "ae639036-52dd-4876-893e-4862409d7578"
@@ -318,10 +318,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] SLA-Machbarkeit: Im Falle eines ausgerufenen Disaster-Recovery- oder Business-Continuity-Ereignisses werden die SLA-Verpflichtungen für d
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'für die Dauer des Notfallbetriebs ausgesetzt' → explicit_limit (DR_SUSPENSION). Korrekt als informativ klassifiziert."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "b533527e-a65e-4338-8486-9d01066e0506"
@@ -339,8 +339,8 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] SLA-Machbarkeit: Für Störungen der Priorität 2 beträgt die Reaktionszeit acht (8) Stunden.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'Priorität 2' + PB-SLA-004 negative_any 'acht stunden' → korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
