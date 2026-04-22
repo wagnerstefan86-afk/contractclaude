@@ -1,0 +1,472 @@
+# Auto-dumped by scripts/dump_run_fixtures.py — please fill the
+# Reviewer fields (expected_outcome, regression_case, hypothesis,
+# root_cause) per obligation. See fixtures/schema.md.
+contract_id: "GS-01"
+run_id: "bb280431-47c3-4297-9115-0f1f4b49c56b"
+git_sha: ""
+captured_at: "2026-04-22"
+source: "live-container"
+active_lenses: ['LENS-AUDIT', 'LENS-INCIDENT', 'LENS-SLA']
+
+obligations:
+  - obligation_id: "07a78bbf-e493-44ce-ba03-b799dd4eeaed"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftragnehmer muss die Maßnahmen innerhalb der vereinbarten Fristen umsetzen.
+    verbatim_quote: |-
+      Der Auftragnehmer muss die Maßnahmen innerhalb der vereinbarten Fristen umsetzen.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "5cee203d-777d-4ec0-8821-8b7293cc71b0"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] Audit- und Prüfungsrechte: Der Auftragnehmer muss die Maßnahmen innerhalb der vereinbarten Fristen umsetzen.
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "09a4c1cb-d090-4596-a23b-a13c74825756"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Bei Feststellungen im Rahmen eines Audits ist der Auftragnehmer verpflichtet, innerhalb von 30 Kalendertagen einen Maßnahmenplan zur Behebung der festgestellten Mängel vorzulegen.
+    verbatim_quote: |-
+      Bei Feststellungen im Rahmen eines Audits ist der Auftragnehmer verpflichtet, innerhalb von 30 Kalendertagen einen Maßnahmenplan zur Behebung der festgestellten Mängel vorzulegen.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "36c8dd3d-3244-46c7-bf41-a5ace96ae1c6"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] Audit- und Prüfungsrechte: Bei Feststellungen im Rahmen eines Audits ist der Auftragnehmer verpflichtet, innerhalb von 30 Kalendertagen einen Maßna
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "131b97c4-c51a-4f0a-b23b-42a634fce465"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftragnehmer weist dem Auftraggeber auf Verlangen, mindestens jedoch einmal jährlich, die Gültigkeit seiner ISO 27001-Zertifizierung nach.
+    verbatim_quote: |-
+      Der Auftragnehmer weist dem Auftraggeber auf Verlangen, mindestens jedoch einmal jährlich, die Gültigkeit seiner ISO 27001-Zertifizierung nach.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "4836e043-04d2-4fe2-a612-977ebd86f5a1"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] Audit- und Prüfungsrechte: 2 Pflichten ohne Playbook-Zuordnung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "4ee85405-3e02-4788-9603-148bb9ac8d2b"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftragnehmer legt eine Kopie des aktuellen Zertifikats sowie den zugehörigen Auditbericht des Zertifizierers vor.
+    verbatim_quote: |-
+      Der Auftragnehmer legt eine Kopie des aktuellen Zertifikats sowie den zugehörigen Auditbericht des Zertifizierers vor.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "4836e043-04d2-4fe2-a612-977ebd86f5a1"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] Audit- und Prüfungsrechte: 2 Pflichten ohne Playbook-Zuordnung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "5422ac64-ca1a-4b82-81bc-ee07562159bc"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Umfang der Audits ist auf den Vertragsgegenstand und die damit in unmittelbarem Zusammenhang stehenden Prozesse, Systeme und Dokumentationen beschränkt.
+    verbatim_quote: |-
+      Der Umfang der Audits ist auf den Vertragsgegenstand und die damit in unmittelbarem Zusammenhang stehenden Prozesse, Systeme und Dokumentationen beschränkt.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "ec117228-653b-4b65-b914-3b50bc8377ad"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] Audit- und Prüfungsrechte: Der Umfang der Audits ist auf den Vertragsgegenstand und die damit in unmittelbarem Zusammenhang stehenden Prozesse, Sys
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "86238373-1356-4b8b-822a-b299c613c269"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftragnehmer unterstützt die Durchführung der Audits aktiv und ohne gesonderte Vergütung.
+    verbatim_quote: |-
+      Der Auftragnehmer unterstützt die Durchführung der Audits aktiv und ohne gesonderte Vergütung.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "673aa10a-aee0-40e4-a986-22f0b464dac2"
+    current_severity: "medium"
+    current_materiality: "medium"
+    current_playbook_id: null
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Der Auftragnehmer unterstützt die Durchführung der Audits aktiv und ohne gesonderte Vergütung.
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "95a9cfe7-7a34-4ba8-a07b-141f56d7394e"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Endkunden des Auftraggebers dürfen eigene Prüfungen beim Auftragnehmer durchführen lassen.
+    verbatim_quote: |-
+      Endkunden des Auftraggebers dürfen eigene Prüfungen beim Auftragnehmer durchführen lassen.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "1ab2bac5-1523-417f-8e0c-dbc46e1fee2c"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-AUDIT-002"
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Direktes Auditrecht für Endkunden oder Dritte
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "d85e85d9-1771-47aa-9e1c-03a48698a454"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftraggeber ist berechtigt, jederzeit und ohne vorherige Ankündigung Audits, Inspektionen und Prüfungen beim Auftragnehmer durchzuführen oder durch von ihm beauftragte Dritte durchführen zu lassen.
+    verbatim_quote: |-
+      Der Auftraggeber ist berechtigt, jederzeit und ohne vorherige Ankündigung Audits, Inspektionen und Prüfungen beim Auftragnehmer durchzuführen oder durch von ihm beauftragte Dritte durchführen zu lassen.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "1ab2bac5-1523-417f-8e0c-dbc46e1fee2c"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-AUDIT-002"
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Direktes Auditrecht für Endkunden oder Dritte
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "de1c97b0-c356-44e0-946e-640fa5ae7880"
+    lens: "LENS-AUDIT"
+    theme: "audit_rights"
+    summary: |-
+      Der Auftragnehmer stellt dem Auftraggeber und den von ihm beauftragten Prüfern kostenfrei und ohne Einschränkung Zugang zu allen relevanten Räumlichkeiten, Systemen, Daten, Dokumenten und Mitarbeitern zur Verfügung.
+    verbatim_quote: |-
+      Der Auftragnehmer stellt dem Auftraggeber und den von ihm beauftragten Prüfern kostenfrei und ohne Einschränkung Zugang zu allen relevanten Räumlichkeiten, Systemen, Daten, Dokumenten und Mitarbeitern zur Verfügung.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "f5a7238c-553e-4937-916a-e82d6b6b872d"
+    current_severity: "medium"
+    current_materiality: "medium"
+    current_playbook_id: "PB-AUDIT-003"
+    current_finding_title: |-
+      Audit- und Prüfungsrechte: Kostenfreie Auditunterstützung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "94aa797b-1fd5-44ca-b63a-4687278ba58c"
+    lens: "LENS-INCIDENT"
+    theme: "incident_reporting"
+    summary: |-
+      Der Auftragnehmer erstellt für jeden gemeldeten Sicherheitsvorfall einen qualifizierten Bericht innerhalb von 72 Stunden nach der Erstmeldung.
+    verbatim_quote: |-
+      Der Auftragnehmer erstellt für jeden gemeldeten Sicherheitsvorfall einen qualifizierten Bericht innerhalb von 72 Stunden nach der Erstmeldung.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "88b66ca6-e704-4093-b274-db4376a2dd3d"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-INC-002"
+    current_finding_title: |-
+      Incident Reporting und Meldepflichten: Meldepflicht für jedes Security-Event
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "95478e8c-6616-469c-9c58-5dcc3c9e5141"
+    lens: "LENS-INCIDENT"
+    theme: "incident_reporting"
+    summary: |-
+      Die Meldepflicht besteht unabhängig von der Schwere des Vorfalls. Jedes sicherheitsrelevante Ereignis, einschließlich Verdachtsfällen und Near-Misses, ist meldepflichtig.
+    verbatim_quote: |-
+      Die Meldepflicht besteht unabhängig von der Schwere des Vorfalls. Jedes sicherheitsrelevante Ereignis, einschließlich Verdachtsfällen und Near-Misses, ist meldepflichtig.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "88b66ca6-e704-4093-b274-db4376a2dd3d"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-INC-002"
+    current_finding_title: |-
+      Incident Reporting und Meldepflichten: Meldepflicht für jedes Security-Event
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "b7e69499-6190-4055-a621-e6fcc79bf393"
+    lens: "LENS-INCIDENT"
+    theme: "incident_reporting"
+    summary: |-
+      Ein Abschlussbericht mit Root-Cause-Analyse ist innerhalb von fünf (5) Werktagen nach Abschluss der Sofortmaßnahmen vorzulegen.
+    verbatim_quote: |-
+      Ein Abschlussbericht mit Root-Cause-Analyse ist innerhalb von fünf (5) Werktagen nach Abschluss der Sofortmaßnahmen vorzulegen.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "88b66ca6-e704-4093-b274-db4376a2dd3d"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-INC-002"
+    current_finding_title: |-
+      Incident Reporting und Meldepflichten: Meldepflicht für jedes Security-Event
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "d4e53267-7d34-41e8-83d5-803bab79bb03"
+    lens: "LENS-INCIDENT"
+    theme: "incident_reporting"
+    summary: |-
+      Soweit der Auftragnehmer eigene Meldepflichten hat (z.B. nach Art. 33 DSGVO), stimmt er die Meldung vorab mit dem Auftraggeber ab.
+    verbatim_quote: |-
+      Soweit der Auftragnehmer eigene Meldepflichten hat (z.B. nach Art. 33 DSGVO), stimmt er die Meldung vorab mit dem Auftraggeber ab.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "301b1dfe-9cbd-48f5-bb70-5407ec8679f0"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-INC-003"
+    current_finding_title: |-
+      Incident Reporting und Meldepflichten: Regulatorische Meldepflichten durchgereicht
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "d9ddab9b-ff78-4ea6-b13c-d8bdb910e82d"
+    lens: "LENS-INCIDENT"
+    theme: "incident_reporting"
+    summary: |-
+      Der Auftragnehmer unterstützt den Auftraggeber bei der Erfüllung seiner regulatorischen Meldepflichten gegenüber Aufsichtsbehörden.
+    verbatim_quote: |-
+      Der Auftragnehmer unterstützt den Auftraggeber bei der Erfüllung seiner regulatorischen Meldepflichten gegenüber Aufsichtsbehörden.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "301b1dfe-9cbd-48f5-bb70-5407ec8679f0"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-INC-003"
+    current_finding_title: |-
+      Incident Reporting und Meldepflichten: Regulatorische Meldepflichten durchgereicht
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "1aaea942-fe41-4b81-bb3e-d94d6f57d9ea"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Geplante Wartungsfenster werden nicht aus der Berechnung herausgerechnet.
+    verbatim_quote: |-
+      Geplante Wartungsfenster werden nicht aus der Berechnung herausgerechnet.
+    baseline_gap_description: |-
+      Keine Begrenzungen gefunden – unbegrenzte Pflichten entsprechen nie dem Standard.
+    current_finding_id: "453a4713-71c9-4562-a711-4927d9608b41"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      SLA-Machbarkeit: Geplante Wartungsfenster werden nicht aus der Berechnung herausgerechnet.
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "2eca8eec-276d-488e-a62b-5b49c242411c"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Der Auftragnehmer gewährleistet eine Verfügbarkeit der Managed Workplace Services von mindestens 99,99 Prozent, gemessen auf Monatsbasis.
+    verbatim_quote: |-
+      Der Auftragnehmer gewährleistet eine Verfügbarkeit der Managed Workplace Services von mindestens 99,99 Prozent, gemessen auf Monatsbasis.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "9a5de794-51ea-4a75-be72-fed1cd3afe9b"
+    current_severity: "medium"
+    current_materiality: "medium"
+    current_playbook_id: "PB-SLA-002"
+    current_finding_title: |-
+      SLA-Machbarkeit: Verfügbarkeit >= 99.99% oder Transaktionsmessung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "4a590dce-421d-4b69-b706-3ce98a69d173"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Für Störungen der Priorität 1 (Totalausfall eines kritischen Systems) beträgt die maximale Reaktionszeit fünfzehn (15) Minuten.
+    verbatim_quote: |-
+      Für Störungen der Priorität 1 (Totalausfall eines kritischen Systems) beträgt die maximale Reaktionszeit fünfzehn (15) Minuten.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "928b3380-06ac-4bec-b69b-2cadc8d322b2"
+    current_severity: "medium"
+    current_materiality: "medium"
+    current_playbook_id: "PB-SLA-004"
+    current_finding_title: |-
+      SLA-Machbarkeit: Unrealistisch kurze Reaktions- oder Wiederherstellungszeiten
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "6bf6fee6-8626-40c2-ad44-892373a26d2c"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Die vereinbarten Service Levels gelten auch während der Durchführung von Notfallmaßnahmen des Auftragnehmers.
+    verbatim_quote: |-
+      Die vereinbarten Service Levels gelten auch während der Durchführung von Notfallmaßnahmen des Auftragnehmers.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "ef5aac81-d9bb-4d2e-ba3a-6671279daec2"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: "PB-SLA-003"
+    current_finding_title: |-
+      SLA-Machbarkeit: Keine SLA-Suspension bei DR/BCM
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "7916a0ca-5054-449a-bd08-94f9cd75995a"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Für Priorität 3 (geringe Einschränkung) beträgt die Reaktionszeit vier (4) Stunden.
+    verbatim_quote: |-
+      Für Priorität 3 (geringe Einschränkung) beträgt die Reaktionszeit vier (4) Stunden.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "be4ed677-15ff-4a97-a6ba-1e8b279789eb"
+    current_severity: "info"
+    current_materiality: "low"
+    current_playbook_id: null
+    current_finding_title: |-
+      [Informativ] SLA-Machbarkeit: Für Priorität 3 (geringe Einschränkung) beträgt die Reaktionszeit vier (4) Stunden.
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "842d8fde-205d-495d-9a27-f4647b7c6b40"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Bei Unterschreitung der vereinbarten Verfügbarkeit ist der Auftragnehmer verpflichtet, dem Auftraggeber eine Vertragsstrafe in Höhe von 0,5 Prozent der monatlichen Vergütung je angefangener Stunde der Nichtverfügbarkeit zu zahlen.
+    verbatim_quote: |-
+      Bei Unterschreitung der vereinbarten Verfügbarkeit ist der Auftragnehmer verpflichtet, dem Auftraggeber eine Vertragsstrafe in Höhe von 0,5 Prozent der monatlichen Vergütung je angefangener Stunde der Nichtverfügbarkeit zu zahlen.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "9a5de794-51ea-4a75-be72-fed1cd3afe9b"
+    current_severity: "medium"
+    current_materiality: "medium"
+    current_playbook_id: "PB-SLA-002"
+    current_finding_title: |-
+      SLA-Machbarkeit: Verfügbarkeit >= 99.99% oder Transaktionsmessung
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "b8996a59-1bae-4708-a076-3e80d7560505"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Für Priorität 2 (erhebliche Einschränkung) beträgt die Reaktionszeit dreißig (30) Minuten.
+    verbatim_quote: |-
+      Für Priorität 2 (erhebliche Einschränkung) beträgt die Reaktionszeit dreißig (30) Minuten.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "928b3380-06ac-4bec-b69b-2cadc8d322b2"
+    current_severity: "medium"
+    current_materiality: "medium"
+    current_playbook_id: "PB-SLA-004"
+    current_finding_title: |-
+      SLA-Machbarkeit: Unrealistisch kurze Reaktions- oder Wiederherstellungszeiten
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
+
+  - obligation_id: "eb6b4b3c-aa24-43dc-86cb-3c242c3dd740"
+    lens: "LENS-SLA"
+    theme: "sla_feasibility"
+    summary: |-
+      Eine Aussetzung der SLAs bei Disaster-Recovery-Maßnahmen bedarf der vorherigen schriftlichen Zustimmung des Auftraggebers.
+    verbatim_quote: |-
+      Eine Aussetzung der SLAs bei Disaster-Recovery-Maßnahmen bedarf der vorherigen schriftlichen Zustimmung des Auftraggebers.
+    baseline_gap_description: |-
+      Teilweise Begrenzungen vorhanden, Abgleich mit Standard-Position empfohlen.
+    current_finding_id: "87d7bb87-3719-482e-9e04-d617f9087922"
+    current_severity: "high"
+    current_materiality: "high"
+    current_playbook_id: null
+    current_finding_title: |-
+      SLA-Machbarkeit: Eine Aussetzung der SLAs bei Disaster-Recovery-Maßnahmen bedarf der vorherigen schriftlichen Zustimmung des Auftraggeber
+    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null         #                          <-- Reviewer
+    regression_case: false          #                          <-- Reviewer
+    hypothesis: ""                  #                          <-- Reviewer
+    root_cause: ok                  # see schema.md            <-- Reviewer
