@@ -125,6 +125,28 @@ _DEFENSIVE_SCOPE_LIMIT = (
     "zweck des vertrags", "for the purpose of the contract",
     "nur für zwecke des vertrags", "only for the purposes of the contract",
     "auftragsumfang", "vertragsumfang",
+    # "Erforderlich" bounds an audit-support obligation to what is
+    # actually needed for the audit, instead of an open-ended "all
+    # documents/information" duty. Live-run GS-03 showed
+    # "stellt die für das Audit erforderlichen Unterlagen und Auskünfte
+    # zur Verfügung" as visible high risk although the obligation is
+    # explicitly scope-limited via "erforderlichen". Patterns are kept
+    # narrow on audit-context wording (Unterlagen/Auskünfte) — bare
+    # "erforderliche Informationen / Daten" is intentionally NOT
+    # included because it misfires on incident-passthrough clauses
+    # ("durch zeitnahe Bereitstellung der erforderlichen Informationen").
+    "erforderlichen unterlagen", "erforderliche unterlagen",
+    "erforderlichen auskünfte", "erforderliche auskünfte",
+    # "Wichtiger Grund" is a German legal-language construct that bounds
+    # discretionary refusal/withdrawal: "kann nur aus wichtigem Grund
+    # verweigern" = the vendor MAY ONLY refuse for good cause. From the
+    # buyer perspective this is a defensive limit on the vendor's veto.
+    # Live-run GS-03 still surfaces the Mandantentrennung-Schutz clause
+    # as visible risk without these patterns.
+    "nur aus wichtigem grund", "nur bei wichtigem grund",
+    "nur aus wichtigen gründen", "nur bei wichtigen gründen",
+    "aus wichtigem grund verweigern", "aus wichtigem grund widersprechen",
+    "for good cause only", "only for good cause",
 )
 
 # ---------------------------------------------------------------------------

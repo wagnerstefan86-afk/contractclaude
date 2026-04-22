@@ -45,11 +45,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       Audit- und Prüfungsrechte: Der Auftragnehmer stellt die für das Audit erforderlichen Unterlagen und Auskünfte zur Verfügung.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
     expected_playbook: null         #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "Audit-Support-Klausel mit 'erforderlichen Unterlagen/Auskünfte' ist scope-limited; Mini-Phase-2a.3 ergänzt _DEFENSIVE_SCOPE_LIMIT entsprechend."
+    root_cause: classifier_positive_gap  # see schema.md       <-- Reviewer
 
   - obligation_id: "5c05e344-1c37-40e2-95fd-a44dd14376cd"
     lens: "LENS-AUDIT"
@@ -66,11 +66,11 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       Audit- und Prüfungsrechte: Der Auftragnehmer kann die Zustimmung nur aus wichtigem Grund verweigern, insbesondere zum Schutz der Mandantentrennung.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
     expected_playbook: null         #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "'nur aus wichtigem Grund verweigern' ist die deutsche Legal-Konstruktion 'for good cause only' — bounded vendor discretion. Mini-Phase-2a.3 ergänzt _DEFENSIVE_SCOPE_LIMIT entsprechend."
+    root_cause: classifier_positive_gap  # see schema.md       <-- Reviewer
 
   - obligation_id: "9192b9dc-ab06-47f4-a205-b75ae3284676"
     lens: "LENS-AUDIT"
