@@ -426,7 +426,19 @@ def _is_positive_text(text: str) -> tuple[bool, str]:
 def _has_missing_safeguard_for_group(
     group_obls: list[Obligation],
     missing_safeguards: list[MissingSafeguard],
+    obligation_only: bool = False,
 ) -> bool:
+    """Does a MissingSafeguard point into this cluster?
+
+    With ``obligation_only=True`` only direct obligation-id links count.
+    That is the "strong" signal: this specific obligation is missing a
+    safeguard, so it must surface as a risk regardless of text patterns.
+
+    With ``obligation_only=False`` (default) lens-level links also count.
+    That is the "weak" signal: some obligation on the same lens has a
+    missing safeguard. Used as a fallback when the text itself is not
+    clearly positive — see classify_group.
+    """
     obl_ids = {o.id for o in group_obls}
     lens_ids = {o.lens_config_id for o in group_obls if o.lens_config_id}
     for ms in missing_safeguards:
@@ -437,6 +449,8 @@ def _has_missing_safeguard_for_group(
             continue
         if ms.obligation_id and ms.obligation_id in obl_ids:
             return True
+        if obligation_only:
+            continue
         if ms.lens_config_id and ms.lens_config_id in lens_ids:
             return True
     return False
@@ -496,26 +510,47 @@ def classify_group(
     member text clearly matches a positive pattern does the group get
     flipped to informational.
     """
-    # 1. Hard risk signals
+    # 1a. Strong risk signals — these always win, regardless of text.
+    #     - direct playbook match,
+    #     - direct obligation-id link on a missing safeguard,
+    #     - contradicts relation.
     if playbook is not None:
         return Classification("risk", "playbook match")
-    if _has_missing_safeguard_for_group(group_obls, missing_safeguards):
-        return Classification("risk", "missing safeguard")
+    if _has_missing_safeguard_for_group(
+        group_obls, missing_safeguards, obligation_only=True
+    ):
+        return Classification("risk", "missing safeguard (obligation-linked)")
     if _has_risky_relation(group_obls, relations):
         return Classification("risk", "contradicts relation")
-    if _has_explicit_gap(group_obls):
-        return Classification("risk", "baseline gap")
 
-    # 2. Positive classification: every member must look positive
+    # 2. Positive-text check. If every member clearly reads as a
+    #    limit / certification / remediation / defensive-scope clause,
+    #    surface the group as informational. Lens-only missing
+    #    safeguards and generic baseline_gap markers (tier-2 signals)
+    #    must not drown out that explicit textual evidence — GS-03
+    #    22.04-live showed all-audit-positive clauses flipping back to
+    #    visible HIGH because a LENS-AUDIT-wide MissingSafeguard was
+    #    treated as a hard signal here.
     categories: set[str] = set()
+    all_positive = True
     for obl in group_obls:
         text = _normalize((obl.summary or "") + " " + (obl.verbatim_quote or ""))
         if not text:
             return Classification("risk", "empty text (default to risk)")
         is_pos, cat = _is_positive_text(text)
         if not is_pos:
-            return Classification("risk", "at least one member not positive")
+            all_positive = False
+            break
         categories.add(cat)
+
+    # 1b. Tier-2 risk signals. Fire only when the text itself is not
+    #     already clearly positive.
+    if not all_positive:
+        if _has_missing_safeguard_for_group(group_obls, missing_safeguards):
+            return Classification("risk", "missing safeguard (lens-linked)")
+        if _has_explicit_gap(group_obls):
+            return Classification("risk", "baseline gap")
+        return Classification("risk", "at least one member not positive")
 
     reason = "informational: " + "+".join(sorted(categories))
     return Classification("informational", reason)
