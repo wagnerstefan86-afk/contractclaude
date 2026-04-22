@@ -137,10 +137,17 @@ def _group_obligations_by_risk(
         component_matches.append((component, pb_match))
 
     # Pass 2: merge components that share the same playbook entry.
+    # Guard: a component whose obligations are all individually informational
+    # (when classified without a playbook match) must not be pulled into a
+    # risk cluster just because another component shares the same playbook.
     merged_by_playbook: dict[str, tuple[list[Obligation], PlaybookEntry]] = {}
     unmatched: list[tuple[list[Obligation], PlaybookEntry | None]] = []
     for component, pb in component_matches:
         if pb is None:
+            unmatched.append((component, None))
+            continue
+        solo_cls = classify_group(component, None, [], [])
+        if solo_cls.kind == "informational":
             unmatched.append((component, None))
             continue
         key = pb.id
