@@ -119,6 +119,7 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
             "werktage vorher", "werktagen vorher",
             "tage vorlauf", "tagen vorlauf",
             "mit vorlaufzeit von", "mit vorlauf von",
+            "einer vorlaufzeit von", "vorlaufzeit von mindestens",
             "mit ankündigungsfrist", "ankündigungsfrist von",
             "nach vorheriger ankündigung", "mit vorheriger ankündigung",
             "mit vorheriger schriftlicher ankündigung",
@@ -447,6 +448,10 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "kein cap", "kein limit",
                 "unlimited", "uncapped", "without cap", "no cap",
                 "unlimitiert",
+                # "Eine Deckelung ... besteht nicht" — explicit statement that
+                # no cap exists. Combined with required "vertragsstrafe" this
+                # is unambiguous.
+                "besteht nicht",
             ),
         ),
         min_support_hits=1,
