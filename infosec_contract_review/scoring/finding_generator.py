@@ -62,6 +62,29 @@ class FindingGenerationResult:
 _GROUPABLE_RELATION_TYPES = {"supplements", "specifies", "references", "tightens"}
 
 
+def _split_risk_and_info_members(
+    group_obls: list[Obligation],
+) -> tuple[list[Obligation], list[Obligation]]:
+    """Split a cluster into (risk-members, info-members) via per-obligation
+    classification.
+
+    An obligation is treated as informational *in the context of this cluster*
+    if classify_group([obl], None, [], []) returns informational — i.e. the
+    text alone reads as a limit / positive / defensive clause. Such members
+    must not pollute the evidence of a risk finding they were pulled into
+    via a groupable relation (supplements/specifies/references/tightens).
+    """
+    risk_members: list[Obligation] = []
+    info_members: list[Obligation] = []
+    for obl in group_obls:
+        solo_cls = classify_group([obl], None, [], [])
+        if solo_cls.kind == "informational":
+            info_members.append(obl)
+        else:
+            risk_members.append(obl)
+    return risk_members, info_members
+
+
 def _build_connected_components(
     obligations: list[Obligation],
     relations: list[ObligationRelation],
@@ -300,21 +323,37 @@ def generate_findings(
         ]
 
         for group_obls, playbook in groups:
+            # Classify the group up-front so we know whether this cluster
+            # represents a risk or an informational finding.
+            classification = classify_group(
+                group_obls, playbook, missing_safeguards, relations,
+            )
+            is_informational = classification.kind == "informational"
+
+            # For a risk cluster with > 1 member, split off members that
+            # individually read as informational (limit / positive /
+            # defensive clauses pulled in via supplements/specifies/
+            # references/tightens relations). Those must not sit inside
+            # the risk finding's evidence. They each become a standalone
+            # informational finding below.
+            expelled_info: list[Obligation] = []
+            if not is_informational and len(group_obls) > 1:
+                risk_members, info_members = _split_risk_and_info_members(group_obls)
+                if info_members and risk_members:
+                    group_obls = risk_members
+                    expelled_info = info_members
+                    logger.info(
+                        "cluster %s: expelled %d informational member(s) from risk cluster",
+                        playbook.id if playbook else "(no-pb)",
+                        len(info_members),
+                    )
+
             max_mat = max(
                 (o.materiality for o in group_obls),
                 key=lambda m: {"low": 0, "medium": 1, "high": 2, "critical": 3}.get(
                     m.value if hasattr(m, "value") else str(m), 1
                 ),
             )
-
-            # Classification gate: decide if this group is a real risk
-            # finding or an informational/positive clause. Only downgrade
-            # when NO hard risk signal fires and every member reads
-            # positive. See finding_classifier.classify_group for rules.
-            classification = classify_group(
-                group_obls, playbook, missing_safeguards, relations,
-            )
-            is_informational = classification.kind == "informational"
 
             title = _build_finding_title(group_obls, playbook, theme_val)
             if is_informational:
@@ -332,6 +371,21 @@ def generate_findings(
             else:
                 severity = _SEVERITY_FROM_MATERIALITY.get(max_mat, FindingSeverity.MEDIUM)
                 materiality = max_mat
+
+            # Diagnostic line: per-cluster severity rationale. Emits enough
+            # signal to reconstruct after the fact why a finding ended up at
+            # its severity without schema changes or user-visible debug UI.
+            logger.info(
+                "finding severity | theme=%s playbook=%s severity=%s materiality=%s "
+                "members=%d informational=%s reason=%r",
+                theme_val,
+                playbook.id if playbook else None,
+                severity.value if hasattr(severity, "value") else str(severity),
+                materiality.value if hasattr(materiality, "value") else str(materiality),
+                len(group_obls),
+                is_informational,
+                classification.reason,
+            )
 
             theme_enum = Theme(theme_val) if theme_val in [t.value for t in Theme] else Theme.OTHER
 
@@ -366,6 +420,40 @@ def generate_findings(
 
             result.findings_created += 1
             result.obligations_grouped += len(group_obls)
+
+            # Spin off one informational finding per expelled member so
+            # their text remains visible under ?include_info=1 without
+            # contaminating the risk cluster.
+            for info_obl in expelled_info:
+                info_cls = classify_group([info_obl], None, [], [])
+                info_title = _build_finding_title([info_obl], None, theme_val)
+                info_title = f"[Informativ] {info_title}"
+                info_desc = _build_finding_description([info_obl], None, [])
+                info_desc = f"*{info_cls.reason}*\n\n" + info_desc
+                info_rec = _build_recommendation(None, [info_obl])
+                info_finding = Finding(
+                    run_id=run_id,
+                    theme=theme_enum,
+                    title=info_title,
+                    description=info_desc,
+                    severity=FindingSeverity.INFO,
+                    materiality=Materiality.LOW,
+                    status=FindingStatus.OPEN,
+                    playbook_entry_id=None,
+                    recommendation=info_rec,
+                )
+                db.add(info_finding)
+                db.flush()
+                db.add(Evidence(
+                    finding_id=info_finding.id,
+                    obligation_id=info_obl.id,
+                    segment_id=info_obl.segment_id,
+                    quote=info_obl.verbatim_quote,
+                    rationale=info_obl.summary,
+                ))
+                result.findings_created += 1
+                result.informational_findings += 1
+                result.obligations_grouped += 1
 
     # Create findings for cross-theme candidates
     for ct in cross_theme_candidates:

@@ -376,6 +376,11 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "werden nicht ausgesetzt", "wird nicht ausgesetzt",
                 "werden nicht suspendiert", "wird nicht suspendiert",
                 "gelten unverändert", "unverändert fort",
+                # "uneingeschränkt" inserts itself between verb and time
+                # clause ("gelten uneingeschränkt auch während ..."), which
+                # breaks the "gelten auch während" substring match above.
+                "gelten uneingeschränkt", "gilt uneingeschränkt",
+                "uneingeschränkt auch während", "uneingeschränkt während",
             ),
         ),
         negative_any=(

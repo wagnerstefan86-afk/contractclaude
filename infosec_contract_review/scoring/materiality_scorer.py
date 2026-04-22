@@ -52,16 +52,38 @@ def score_obligation_materiality(
     if all_limits_null:
         mat = _max_materiality(mat, Materiality.HIGH)
 
-    # Rule 3: missing safeguards referencing this obligation's theme
-    obl_theme = obligation.theme.value if hasattr(obligation.theme, "value") else str(obligation.theme)
+    # Rule 3: missing safeguards that actually reference THIS obligation
+    # (via obligation_id) or the obligation's lens (via lens_config_id).
+    # Earlier versions counted every missing safeguard in the run, which
+    # flipped every obligation to CRITICAL as soon as 3+ safeguards were
+    # missing anywhere — observed in the 22.04 GS-02 run where all 11
+    # findings surfaced as Critical/Critical.
     relevant_missing = [
         ms for ms in missing_safeguards
         if ms.status == "missing"
+        and (
+            (ms.obligation_id is not None and ms.obligation_id == obligation.id)
+            or (
+                ms.lens_config_id is not None
+                and obligation.lens_config_id is not None
+                and ms.lens_config_id == obligation.lens_config_id
+            )
+        )
     ]
     if len(relevant_missing) >= 3:
         mat = _max_materiality(mat, Materiality.CRITICAL)
     elif len(relevant_missing) >= 1:
         mat = _max_materiality(mat, Materiality.HIGH)
+
+    logger.debug(
+        "materiality %s obl=%s theme=%s missing=%d baseline=%s limits_null=%s",
+        mat.value if hasattr(mat, "value") else str(mat),
+        obligation.id,
+        obligation.theme.value if hasattr(obligation.theme, "value") else str(obligation.theme),
+        len(relevant_missing),
+        obligation.baseline_match_status,
+        all_limits_null,
+    )
 
     # Rule 4: contradicts relation → escalate
     for rel in relations:
