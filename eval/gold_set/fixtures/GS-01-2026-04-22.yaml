@@ -24,10 +24,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] Audit- und Prüfungsrechte: Der Auftragnehmer muss die Maßnahmen innerhalb der vereinbarten Fristen umsetzen.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'innerhalb der vereinbarten Fristen' + 'Maßnahmen' → remediation_timebox korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "09a4c1cb-d090-4596-a23b-a13c74825756"
@@ -45,10 +45,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] Audit- und Prüfungsrechte: Bei Feststellungen im Rahmen eines Audits ist der Auftragnehmer verpflichtet, innerhalb von 30 Kalendertagen einen Maßna
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'Maßnahmenplan' in _REMEDIATION_PATTERN → korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "131b97c4-c51a-4f0a-b23b-42a634fce465"
@@ -66,10 +66,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] Audit- und Prüfungsrechte: 2 Pflichten ohne Playbook-Zuordnung
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'ISO 27001' + 'nachweis' → certification korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "4ee85405-3e02-4788-9603-148bb9ac8d2b"
@@ -87,10 +87,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] Audit- und Prüfungsrechte: 2 Pflichten ohne Playbook-Zuordnung
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'Zertifikat' + 'Auditbericht' → certification korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "5422ac64-ca1a-4b82-81bc-ee07562159bc"
@@ -108,10 +108,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] Audit- und Prüfungsrechte: Der Umfang der Audits ist auf den Vertragsgegenstand und die damit in unmittelbarem Zusammenhang stehenden Prozesse, Sys
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'auf den Vertragsgegenstand beschränkt' in _DEFENSIVE_SCOPE_LIMIT → korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "86238373-1356-4b8b-822a-b299c613c269"
@@ -255,11 +255,11 @@ obligations:
     current_playbook_id: "PB-INC-002"
     current_finding_title: |-
       Incident Reporting und Meldepflichten: Meldepflicht für jedes Security-Event
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "Abschlussbericht innerhalb von 5 Werktagen → remediation_timebox korrekt informativ. Im Live-Run über Relations-Merge in PB-INC-002-Cluster gezogen."                  #                          <-- Reviewer
+    root_cause: assembly_wrong_merge                  # see schema.md            <-- Reviewer
 
   - obligation_id: "d4e53267-7d34-41e8-83d5-803bab79bb03"
     lens: "LENS-INCIDENT"
@@ -319,9 +319,9 @@ obligations:
     current_finding_title: |-
       SLA-Machbarkeit: Geplante Wartungsfenster werden nicht aus der Berechnung herausgerechnet.
     expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
+    regression_case: true          #                          <-- Reviewer
+    hypothesis: "'nicht herausgerechnet' → Risk-Amplifier 'nicht aus der berechnung' muss feuern — Regression-Anker für Phase-2a-Amplifier-Fix."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "2eca8eec-276d-488e-a62b-5b49c242411c"
@@ -361,9 +361,9 @@ obligations:
     current_finding_title: |-
       SLA-Machbarkeit: Unrealistisch kurze Reaktions- oder Wiederherstellungszeiten
     expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    expected_playbook: PB-SLA-004 #                          <-- Reviewer
+    regression_case: true          #                          <-- Reviewer
+    hypothesis: "Kerntreffer P1 SLA 15-Min-Reaktionszeit (PB-SLA-004) — Regressions-Anker."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "6bf6fee6-8626-40c2-ad44-892373a26d2c"
@@ -382,9 +382,9 @@ obligations:
     current_finding_title: |-
       SLA-Machbarkeit: Keine SLA-Suspension bei DR/BCM
     expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
-    regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    expected_playbook: PB-SLA-003 #                          <-- Reviewer
+    regression_case: true          #                          <-- Reviewer
+    hypothesis: "Kerntreffer DR/BCM SLA-Suspension (PB-SLA-003) — Regressions-Anker."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "7916a0ca-5054-449a-bd08-94f9cd75995a"
@@ -402,10 +402,10 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       [Informativ] SLA-Machbarkeit: Für Priorität 3 (geringe Einschränkung) beträgt die Reaktionszeit vier (4) Stunden.
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
+    hypothesis: "'Priorität 3' in _EXPLICIT_LIMITS_PRIORITY_MATRIX und PB-SLA-004 negative_any '4 stunden' → korrekt informativ."                  #                          <-- Reviewer
     root_cause: ok                  # see schema.md            <-- Reviewer
 
   - obligation_id: "842d8fde-205d-495d-9a27-f4647b7c6b40"
@@ -465,8 +465,8 @@ obligations:
     current_playbook_id: null
     current_finding_title: |-
       SLA-Machbarkeit: Eine Aussetzung der SLAs bei Disaster-Recovery-Maßnahmen bedarf der vorherigen schriftlichen Zustimmung des Auftraggeber
-    expected_outcome: risk          # risk | info | suppress  <-- Reviewer
-    expected_playbook: null         #                          <-- Reviewer
+    expected_outcome: info          # risk | info | suppress  <-- Reviewer
+    expected_playbook: null #                          <-- Reviewer
     regression_case: false          #                          <-- Reviewer
-    hypothesis: ""                  #                          <-- Reviewer
-    root_cause: ok                  # see schema.md            <-- Reviewer
+    hypothesis: "Aussetzung bedarf vorheriger schriftlicher Zustimmung des Auftraggebers → explicit_limit (CONSENT) korrekt informativ. Im Live-Run als risk gezeigt (Assembly/Materiality)."                  #                          <-- Reviewer
+    root_cause: assembly_wrong_merge                  # see schema.md            <-- Reviewer
