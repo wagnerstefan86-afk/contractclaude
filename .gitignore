@@ -5,3 +5,10 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# local-only artifacts
+.venv/
+.env
+.env~
+.tmp_test_backups/
+docker-compose.override.yml
