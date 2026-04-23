@@ -290,7 +290,16 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
         # risk markers (no exemption / explicitly included / missing);
         # the SAFE exemption phrases are in negative_any.
         required_groups=(
-            _g("sla", "service level", "verfügbarkeit", "availability"),
+            _g(
+                "sla", "service level", "verfügbarkeit", "availability",
+                # Live-run GS-01 fixture shortens the summary to
+                # "Geplante Wartungsfenster werden nicht aus der
+                # Berechnung herausgerechnet." with no "Verfügbarkeit"
+                # noun. Within the sla_feasibility theme filter the
+                # word "berechnung" is specific enough to keep the
+                # match SLA-scoped.
+                "berechnung",
+            ),
             _g(
                 "wartung", "wartungsfenster", "maintenance", "maintenance window",
                 "planned maintenance",
@@ -305,6 +314,13 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "werden einbezogen", "werden mitgerechnet",
                 "not exempt", "not excluded",
                 "included in availability",
+                # "nicht (aus der Berechnung) herausgerechnet" is the
+                # risk-indicating counterpart to the SAFE phrases in
+                # negative_any. GS-01 / GS-02 22.04-live both use it
+                # verbatim; without these support entries neither
+                # obligation surfaced with a PB-SLA-001 match.
+                "nicht herausgerechnet",
+                "nicht aus der berechnung",
             ),
         ),
         negative_any=(
@@ -362,6 +378,12 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "dr", "disaster recovery", "bcm",
                 "business continuity", "notfall", "notfallbetrieb",
                 "itscm",
+                # Blanket-no-suspension clauses ("Eine Aussetzung der
+                # SLAs ist ausgeschlossen.") subsume the DR/BCM concern
+                # without naming a specific scenario. Scoped to the
+                # sla_feasibility theme and to the SLA+risk-marker
+                # required groups, so the broader word is safe here.
+                "aussetzung", "suspension",
             ),
             _g(
                 # Risk markers: SLA keeps applying during DR/BCM.
@@ -381,6 +403,10 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 # breaks the "gelten auch während" substring match above.
                 "gelten uneingeschränkt", "gilt uneingeschränkt",
                 "uneingeschränkt auch während", "uneingeschränkt während",
+                # Blanket risk markers used with the "Aussetzung"
+                # required-group entries above.
+                "ist ausgeschlossen", "sind ausgeschlossen",
+                "ist unzulässig", "sind unzulässig",
             ),
         ),
         negative_any=(
@@ -416,6 +442,14 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "entstör", "entstörzeit",
                 "p1", "priorität 1", "priority 1",
                 "severity 1", "sev1", "sev 1",
+                # Hard recovery goals (RPO / RTO with a tight value) live in
+                # the same family as an unrealistic-response-time risk.
+                # GS-02 22.04-live "RPO 0 Minuten" and "RTO 30 Minuten"
+                # both belong here; keep these abbreviations as first-tier
+                # triggers to catch clauses that don't name a priority.
+                "rpo", "rto",
+                "recovery point", "recovery time",
+                "datenverlusttoleranz",
             ),
             _g(
                 "15 min", "20 min", "30 min",
@@ -423,6 +457,14 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "fifteen minutes", "thirty minutes",
                 "eine stunde", "1 stunde", "within one hour", "within 1 hour",
                 "2 stunden", "two hours", "2 hours", "within 2 hours",
+                # "RPO 0 Minuten" style values. The leading space in
+                # " 0 minuten" keeps this from matching embedded
+                # substrings of "10 minuten" / "20 minuten" / ...
+                # (which have no space before the trailing 0). The
+                # "null 0" pattern matches the verbose "null (0)"
+                # notation used in the GS-02 fixture.
+                " 0 minuten", "null 0", "null minuten",
+                "zero minutes",
             ),
         ),
         negative_any=(
