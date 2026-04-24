@@ -361,6 +361,28 @@ def ui_parse_all(package_id: str, db: Session = Depends(get_db)):
 
 @router.post("/packages/{package_id}/analyse")
 def ui_start_analysis(package_id: str, db: Session = Depends(get_db)):
+    """Start analysis in the background and return 303 immediately.
+
+    The pipeline can run for several minutes (especially against a
+    local LLM). Blocking the HTTP request gave operators the
+    impression "nothing is happening" — Uvicorn doesn't even log the
+    request line until the response is produced. We now:
+
+      1. create the AnalysisRun with status=RUNNING and commit it,
+         so the package-detail view immediately shows
+         "Analyse läuft gerade…";
+      2. spawn the existing pipeline in a daemon thread with its own
+         DB session;
+      3. redirect (303) the browser straight back to the package
+         detail page.
+
+    Errors inside the worker are captured onto the run row
+    (status=FAILED + error_message) — they no longer surface as a
+    failed HTTP response.
+    """
+    import threading
+
+    from infosec_contract_review.core.database import SessionLocal
     from infosec_contract_review.pipeline.analysis import run_obligation_extraction
 
     pkg = db.get(ContractPackage, package_id)
@@ -369,7 +391,10 @@ def ui_start_analysis(package_id: str, db: Session = Depends(get_db)):
 
     run = AnalysisRun(
         package_id=package_id,
-        status=RunStatus.PENDING,
+        # Mark RUNNING up front so the package detail page reflects
+        # the new state on the very next GET. The pipeline itself
+        # transitions to COMPLETED / FAILED.
+        status=RunStatus.RUNNING,
         config_snapshot={
             "model_name": "not_configured",
             "model_version": "not_configured",
@@ -380,17 +405,53 @@ def ui_start_analysis(package_id: str, db: Session = Depends(get_db)):
     db.add(run)
     db.commit()
     db.refresh(run)
+    run_id = run.id
 
-    try:
-        result = run_obligation_extraction(
-            package_id, run.id, list(ANALYSIS_LENSES), db,
-        )
-        msg = f"Analyse+abgeschlossen:+{result.get('obligations_extracted', 0)}+Obligations,+{result.get('findings_generated', 0)}+Findings"
-    except Exception as e:
-        logger.exception("UI analysis failed for package %s", package_id)
-        msg = f"Analyse+fehlgeschlagen:+{str(e)[:80]}"
+    def _worker(pkg_id: str, run_id: str, lenses: list[str]) -> None:
+        # Fresh session — the request-scoped one closes when the
+        # response is sent.
+        worker_db = SessionLocal()
+        try:
+            run_obligation_extraction(pkg_id, run_id, lenses, worker_db)
+            logger.info(
+                "Background analysis run %s finished for package %s",
+                run_id, pkg_id,
+            )
+        except Exception as e:  # noqa: BLE001 — never propagate
+            logger.exception(
+                "Background analysis run %s failed for package %s", run_id, pkg_id,
+            )
+            try:
+                worker_db.rollback()
+            except Exception:
+                pass
+            try:
+                worker_run = worker_db.get(AnalysisRun, run_id)
+                if worker_run is not None:
+                    worker_run.status = RunStatus.FAILED
+                    worker_run.error_message = str(e)[:500]
+                    worker_db.commit()
+            except Exception:
+                logger.exception(
+                    "Failed to write error_message onto run %s", run_id,
+                )
+        finally:
+            try:
+                worker_db.close()
+            except Exception:
+                pass
 
-    return RedirectResponse(url=f"/ui/packages/{package_id}?msg={msg}", status_code=303)
+    threading.Thread(
+        target=_worker,
+        args=(package_id, run_id, list(ANALYSIS_LENSES)),
+        daemon=True,
+        name=f"analysis-{run_id[:8]}",
+    ).start()
+
+    msg = "Analyse+gestartet"
+    return RedirectResponse(
+        url=f"/ui/packages/{package_id}?msg={msg}", status_code=303,
+    )
 
 
 # ---------------------------------------------------------------------------

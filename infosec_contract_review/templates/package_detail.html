@@ -85,7 +85,17 @@
             <small class="text-muted ms-2">{{ analysis_lenses|join(' + ') }}</small>
         </form>
         {% elif has_running %}
-        <div class="alert alert-warning mb-3">Eine Analyse läuft gerade…</div>
+        <div class="alert alert-warning mb-3 d-flex justify-content-between align-items-center">
+            <span>Eine Analyse läuft gerade…
+                <small class="text-muted ms-2">
+                    Die Analyse läuft im Hintergrund weiter. Diese Seite neu laden,
+                    um den Fortschritt zu sehen.
+                </small>
+            </span>
+            <a href="/ui/packages/{{ pkg.id }}" class="btn btn-sm btn-outline-secondary">
+                Aktualisieren
+            </a>
+        </div>
         {% elif not documents %}
         <p class="text-muted">Laden Sie zuerst Dokumente hoch.</p>
         {% elif not has_parsed %}
