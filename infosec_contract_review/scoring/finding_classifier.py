@@ -81,8 +81,19 @@ _POSITIVE_CERTIFICATION = (
     "iso 9001", "iso9001",
     "iso 20000", "iso 22301",
     "iso 27017", "iso 27018",
+    "iso 27005",
     "soc 2", "soc2", "soc 1", "soc1",
     "bsi c5", "c5 testat", "trusted info security assurance", "tisax",
+    # Matrix v1.3 CERT-002 / CERT-003: additional standard proofs that
+    # belong to "positive compliance evidence" (ISAE testation, EN 50600
+    # data-centre certification). GOV-001 adds ISMS / IS-Risikomanagement
+    # as equivalents to the Zertifikat/Testat family for scope clauses.
+    "isae 3402", "isae3402",
+    "en 50600", "en50600",
+    "vk3", "verfügbarkeitsklasse 3",
+    "rechenzentrumszertifizierung",
+    "is-risikomanagement", "is risikomanagement",
+    "ismssystem",
     "zertifiziert", "zertifizierung", "zertifikat",
     "attestation", "attestierung",
     "auditbericht", "prüfbericht", "testat",
@@ -147,6 +158,13 @@ _DEFENSIVE_SCOPE_LIMIT = (
     "nur aus wichtigen gründen", "nur bei wichtigen gründen",
     "aus wichtigem grund verweigern", "aus wichtigem grund widersprechen",
     "for good cause only", "only for good cause",
+    # Matrix v1.3 AUD-010: scope limited to contract object AND
+    # "unmittelbarer Zusammenhang"-processes. The umbrella
+    # "vertragsgegenstand" is already above; add the connector so
+    # clauses that omit the noun but keep the relational wording also
+    # land on scope_limit.
+    "unmittelbarer zusammenhang", "unmittelbarem zusammenhang",
+    "in unmittelbarem zusammenhang",
 )
 
 # ---------------------------------------------------------------------------
@@ -177,6 +195,14 @@ _EXPLICIT_LIMITS_NOTICE = (
     "mit vorheriger schriftlicher ankündigung",
     "vorab angekündigt", "with advance notice",
     "advance notice of",
+    # Matrix v1.3 AUD-003: audit-questionnaire preparation — "15
+    # Kalendertage vorab" / "Werktage vorab". Different wording than
+    # the above Vorlauf-variants (describes the TIMING of question
+    # delivery, not the audit announcement itself) but functionally
+    # the same scope-limit signal.
+    "kalendertage vorab", "kalendertagen vorab",
+    "werktage vorab", "werktagen vorab",
+    "tage vorab", "tagen vorab",
 )
 _EXPLICIT_LIMITS_TIMEWINDOW = (
     "während geschäftszeiten", "während der geschäftszeiten",
@@ -245,6 +271,13 @@ _EXPLICIT_LIMITS_COST_MODEL = (
     "berechnet nach", "abgerechnet nach",
     "time and material", "time & material",
     "at cost", "on a cost basis",
+    # Matrix v1.3 AUD-004: "X Personentage inklusive, darüber nach Aufwand"
+    # is the approved audit-cost-model. Mark the "inklusive"-side as a
+    # positive cost-limit; the "nach aufwand"-side is already covered
+    # above.
+    "personentage inklusive", "personentage inkl.",
+    "pt inklusive", "pt inkl.",
+    "personentage inkl",
 )
 _EXPLICIT_LIMITS_PENALTY_CAP = (
     "gedeckelt auf", "gedeckelt bei", "gedeckelt",

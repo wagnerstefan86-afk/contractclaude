@@ -151,6 +151,11 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
                 "eigenständig", "direkt", "unmittelbar",
                 "mandantenschutz", "auditrecht", "prüfungsrecht",
                 "eingesetzt", "zugang",
+                # Matrix v1.3 AUD-008 evidence marker: unkoordinierter
+                # Drittzugriff "ohne mandat" ist ein zusätzliches
+                # Risk-Support-Signal, wenn der Drittauditor-Trigger
+                # (required) bereits vorliegt.
+                "ohne mandat",
             ),
         ),
         negative_any=(
@@ -168,6 +173,16 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
             "prior approval", "prior written approval",
             "nur mit zustimmung", "nur nach zustimmung",
             "only with consent", "only upon approval",
+            # Matrix v1.3 AUD-011 (controlled third-party audit — the
+            # positive variant): a clause that ships mandat + vertraulich-
+            # keitsverpflichtung + wirtschaftsprüfer is the CONTROLLED
+            # case and must not escalate as PB-AUDIT-002 risk.
+            "schriftliches mandat", "schriftlich mandatiert",
+            "schriftlich beauftragt",
+            "wirtschaftsprüfer", "wirtschaftspruefer",
+            "zur verschwiegenheit verpflichtet",
+            "zur vertraulichkeit verpflichtet",
+            "gesetzlich zur verschwiegenheit",
         ),
         min_support_hits=1,
     ),
@@ -200,6 +215,12 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
             "berechnet nach", "abgerechnet nach",
             "time and material", "time & material",
             "at cost", "on a cost basis", "on time and material basis",
+            # Matrix v1.3 AUD-004: "X Personentage inklusive, darüber
+            # nach vereinbarten Sätzen" is the approved bounded model
+            # and must disqualify the "kostenfreie Unterstützung"-risk
+            # match even without "nach aufwand" literal.
+            "personentage inklusive", "pt inklusive",
+            "personentage inkl", "pt inkl",
         ),
         min_support_hits=0,
     ),
