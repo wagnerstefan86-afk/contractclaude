@@ -17,7 +17,7 @@ einmal vor und hat genau eine Kategorie.
 | `outside_current_scope` | Themenfeld bewusst außerhalb PoC-Scope. |
 | `needs_policy_decision` | Fachliche Policy-/Schwellwertentscheidung vor Automatisierung nötig. |
 
-## Deferred rule_ids (26 von 44)
+## Deferred rule_ids (24 von 44)
 
 ### manual_review_only (10)
 
@@ -34,13 +34,17 @@ einmal vor und hat genau eine Kategorie.
 | BCM-002 | bcm_resilience / customer_environment_bcm_scope | Scope-Abgrenzung gegen Kundenumgebung — kontextsensitiv. |
 | BCM-006 | bcm_resilience / notfall_mitwirkung | Notfallmitwirkung im eigenen Verantwortungsbereich — Einzelfall. |
 
-### future_playbook (3)
+### future_playbook (1)
 
 | rule_id | theme / subtheme | Grund |
 |---|---|---|
-| AUD-007 | audit_rights / pooled_multi_customer_audit | Sammel-/Verbundaudit ist eigenes Risikomuster ohne Playbook-Eintrag. |
-| AUD-009 | audit_rights / pentest_rights | Pentest/Vulnerability-Scan/Red-Team hat keinen Playbook-Eintrag (CSV-Notiz bestätigt die Lücke). |
-| INC-007 | incident_reporting / event_threshold (security_service) | SIEM-/SOC-spezifisches Muster — eigenes Risikomuster, kein Playbook. |
+| INC-007 | incident_reporting / event_threshold (security_service) | SIEM-/SOC-spezifisches Muster — eigenes Risikomuster, kein Playbook. Phase 2c bewusst nicht geseedet. |
+
+Hinweis Phase 2c: AUD-007 (Sammelaudit) und AUD-009 (Pentest) waren
+vorher in dieser Kategorie. Sie sind jetzt über die neuen
+Playbook-Einträge **PB-AUDIT-004** bzw. **PB-AUDIT-005** technisch
+abgebildet und erscheinen nicht mehr in dieser Liste — Details im
+Mapping-Dokument.
 
 ### future_lens (9)
 
@@ -75,12 +79,12 @@ einmal vor und hat genau eine Kategorie.
 | Gruppe | n |
 |---|---|
 | `manual_review_only` | 10 |
-| `future_playbook` | 3 |
+| `future_playbook` | 1 |
 | `future_lens` | 9 |
 | `outside_current_scope` | 1 |
 | `needs_policy_decision` | 3 |
-| **Deferred total** | **26** |
-| Technisch übernommen (siehe Mapping-Doc) | 18 |
+| **Deferred total** | **24** |
+| Technisch übernommen (siehe Mapping-Doc) | 20 |
 | **Summe == Total rule_ids in CSV** | **44** ✓ |
 
 Jede deferred rule_id kommt in genau einer Kategorie vor; keine

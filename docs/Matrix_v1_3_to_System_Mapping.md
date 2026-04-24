@@ -59,9 +59,9 @@ Keine Code-Änderung, nur Traceability und Summenkonsistenz.
 | AUD-004 | approved / no | `covered_with_small_adjustment` | `finding_classifier` | `_EXPLICIT_LIMITS_COST_MODEL` += `personentage/pt inklusive`; `PB-AUDIT-003.negative_any` ebenfalls. |
 | AUD-005 | approved / no | `manual_review_only` | `docs_only` | 50-PT-Schwellwert ist Vorstandspolicy, kein robustes Textsignal. |
 | AUD-006 | approved / no | `manual_review_only` | `docs_only` | Regulatorischer Audit-Carveout ist Legal-Einzelfall. |
-| AUD-007 | approved / no | `needs_future_playbook` | `docs_only` | Sammel-/Verbundaudit ohne Playbook-Eintrag. |
+| AUD-007 | approved / no | `covered_with_small_adjustment` | `playbook_matcher` | Phase 2c: neuer Seed **PB-AUDIT-004** (Sammelaudit) mit defensiven Safe-Markern (schriftliche Freigabe / Mandantenschutz / koordinierter Dritter). |
 | AUD-008 | approved / no | `covered_with_small_adjustment` | `playbook_matcher` | `PB-AUDIT-002.support_groups` += `ohne mandat` als zusätzliches Risk-Support-Signal. |
-| AUD-009 | approved / no | `needs_future_playbook` | `docs_only` | Pentest/Vulnerability-Scan hat keinen Playbook-Eintrag (CSV-Notiz bestätigt). |
+| AUD-009 | approved / no | `covered_with_small_adjustment` | `playbook_matcher` | Phase 2c: neuer Seed **PB-AUDIT-005** (Pentest / aktive technische Prüfung) mit defensiven Safe-Markern (vorherige Freigabe / InfoSec-Anfrage / Fragebogen / Zeitfenster / Abbruchkriterien). |
 | AUD-010 | approved / no | `covered_with_small_adjustment` | `finding_classifier` | `_DEFENSIVE_SCOPE_LIMIT` += `unmittelbarer zusammenhang`-Varianten. |
 | AUD-011 | approved / no | `covered_with_small_adjustment` | `playbook_matcher` | `PB-AUDIT-002.negative_any` += `schriftliches mandat / wirtschaftsprüfer / zur verschwiegenheit verpflichtet`-Varianten (positive Variante zu AUD-008). |
 
@@ -128,33 +128,29 @@ Keine Code-Änderung, nur Traceability und Summenkonsistenz.
 | Gruppe | n |
 |---|---|
 | **Total rules in CSV** | **44** |
-| Technisch übernommen (already_covered + covered_with_small_adjustment) | **18** |
+| Technisch übernommen (already_covered + covered_with_small_adjustment) | **20** |
 | davon `already_covered` | 9 |
-| davon `covered_with_small_adjustment` | 9 |
-| **Deferred (→ Matrix_v1_3_Deferred_Rules.md)** | **26** |
+| davon `covered_with_small_adjustment` | 11 |
+| **Deferred (→ Matrix_v1_3_Deferred_Rules.md)** | **24** |
 | davon `manual_review_only` | 10 |
-| davon `needs_future_playbook` | 3 |
+| davon `needs_future_playbook` | 1 |
 | davon `needs_policy_decision` | 3 |
 | davon `not_fit_for_current_architecture` | 9 |
 | davon `outside_current_scope` | 1 |
 
-Kontrolle: 9 + 9 + 10 + 3 + 3 + 9 + 1 = **44** ✓
+Kontrolle: 9 + 11 + 10 + 1 + 3 + 9 + 1 = **44** ✓
 
-### Zielstellen-Verteilung (nur technisch übernommen, 18)
+### Zielstellen-Verteilung (nur technisch übernommen, 20)
 
-| Zielstelle | n | rule_ids |
-|---|---|---|
-| `playbook_matcher` | 7 | AUD-001, AUD-008, AUD-011, INC-001, INC-002, INC-003, BCM-004, BCM-005 (→ 8) |
-| `finding_classifier` | 11 | AUD-002, AUD-003, AUD-004, AUD-010, INC-004, INC-005, CERT-001, CERT-002, CERT-003, GOV-001 (→ 10) |
-
-Hinweis: AUD-008 und AUD-011 ändern beide `PB-AUDIT-002` (matcher),
-AUD-004 ändert primär `finding_classifier` und sekundär
-`PB-AUDIT-003.negative_any`. In obiger Zuordnung zählt die **primäre**
-Zielstelle. Tatsächliche Verteilung:
-
-- `playbook_matcher`: 8 (AUD-001, AUD-008, AUD-011, INC-001, INC-002, INC-003, BCM-004, BCM-005)
+- `playbook_matcher`: 10 (AUD-001, AUD-007, AUD-008, AUD-009, AUD-011, INC-001, INC-002, INC-003, BCM-004, BCM-005)
 - `finding_classifier`: 10 (AUD-002, AUD-003, AUD-004, AUD-010, INC-004, INC-005, CERT-001, CERT-002, CERT-003, GOV-001)
-- Summe: 18 ✓
+- Summe: 20 ✓
+
+Phase-2c-Ergänzung: AUD-007 wird neu an **PB-AUDIT-004** gebunden,
+AUD-009 neu an **PB-AUDIT-005**. Beide neuen Playbook-Einträge sind
+defensiv mit `negative_any`-Safe-Markern gegen den positiv-begrenzten
+(kontrollierten) Fall abgesichert. INC-007 bleibt bewusst deferred —
+kein Seed in diesem Schritt.
 
 ## 5. Kontrollsektion
 
@@ -165,5 +161,5 @@ Zielstelle. Tatsächliche Verteilung:
 | duplicate rule_ids found? | **no** |
 | missing rule_ids? | **none** |
 | extra rule_ids not in csv? | **none** |
-| adopted + deferred == total | 18 + 26 = **44** ✓ |
+| adopted + deferred == total | 20 + 24 = **44** ✓ |
 | overlap adopted ∩ deferred | **{}** |

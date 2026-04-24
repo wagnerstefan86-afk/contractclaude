@@ -61,6 +61,65 @@ playbook_entries:
       Dokumentation oder Personalressourcen vor.
     escalation_note: null
 
+  - id: PB-AUDIT-004
+    version: "1.0"
+    theme: audit_rights
+    risk_pattern: "Sammelaudit ohne schriftliche Freigabe und Mandantenschutz"
+    standard_position: >
+      Sammelaudits nur nach vorheriger schriftlicher Freigabe des
+      Auftragnehmers. Mandantenschutz, Vertraulichkeit und Scope sind
+      vorab verbindlich zu regeln.
+    alt_wordings:
+      - >
+        Sammel-, Verbund- oder Multi-Customer-Audits sind nur nach
+        vorheriger schriftlicher Freigabe des Auftragnehmers zulässig.
+        Mandantenschutz, Vertraulichkeit und Scope werden vor
+        Durchführung verbindlich festgelegt.
+    bidder_questions:
+      - "Ist ein Sammel-/Verbund-/Multi-Customer-Audit geplant?"
+      - "Welche weiteren Auftraggeber sind beteiligt?"
+      - "Wie wird der Mandantenschutz bei einem Sammelaudit gewährleistet?"
+    applicable_when: >
+      Vertrag erlaubt Sammel-, Verbund- oder Multi-Customer-Audits
+      ohne vorherige schriftliche Freigabe, ohne Mandantenschutz und
+      ohne koordinierten Dritten mit Mandat.
+    escalation_note: >
+      Matrix v1.3 AUD-007: unkoordinierte Sammelaudits gefährden
+      Mandantentrennung und binden unverhältnismäßig Ressourcen.
+
+  - id: PB-AUDIT-005
+    version: "1.0"
+    theme: audit_rights
+    risk_pattern: "Aktive technische Prüfungen ohne Freigabelogik"
+    standard_position: >
+      Aktive technische Prüfungen bedürfen vorheriger Anfrage an
+      InfoSec, strukturierter fachlicher Bewertung anhand eines
+      Fragebogens und ausdrücklicher Freigabe. Invasive Tests /
+      Tests gegen Shared-Infrastruktur werden regelmäßig abgelehnt.
+    alt_wordings:
+      - >
+        Pentests, Schwachstellenscans und vergleichbare aktive
+        technische Prüfungen erfolgen ausschließlich nach Anfrage
+        an InfoSec, vollständiger Fragebogenbeantwortung und
+        schriftlicher Freigabe. Umfang, Methode, Zeitfenster,
+        betroffene Systeme und Abbruchkriterien werden vorab
+        verbindlich vereinbart. Shared-Infrastruktur und invasive
+        Tests sind grundsätzlich ausgeschlossen.
+    bidder_questions:
+      - "Sind Pentests, Schwachstellenscans oder Red-Team-Tests vorgesehen?"
+      - "Welche Systeme / Umgebungen sind betroffen, ist Shared-Infrastruktur involviert?"
+      - "Sind Methode, Zeitfenster und Abbruchkriterien vertraglich definiert?"
+    applicable_when: >
+      Vertrag gewährt Rechte für aktive technische Prüfungen
+      (Pentest, Schwachstellenscan, Red-Team, invasive Tests oder
+      Tests gegen Shared-Infrastruktur) ohne vorherige Freigabe,
+      ohne Fragebogen / InfoSec-Anfrage und ohne vertraglich
+      festgelegte Abbruchkriterien / Zeitfenster.
+    escalation_note: >
+      Matrix v1.3 AUD-009: aktive technische Prüfungen können
+      Verfügbarkeit, Integrität, Mandantentrennung und Stabilität
+      beeinträchtigen.
+
   - id: PB-INC-001
     version: "1.0"
     theme: incident_reporting

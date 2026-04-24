@@ -224,6 +224,79 @@ PLAYBOOK_SIGNATURES: dict[str, KeywordSignature] = {
         ),
         min_support_hits=0,
     ),
+    "PB-AUDIT-004": KeywordSignature(
+        # Matrix v1.3 AUD-007: pooled / verbund / multi-customer audits
+        # are a distinct risk pattern. Risky case = "Sammelaudit ohne
+        # schriftliche Freigabe / ohne Mandantenschutz"; the controlled
+        # case (written release + Mandantenschutz + koordinierter
+        # Dritter) is defensively blocked via negative_any.
+        #
+        # The required group carries specific German/English wordings
+        # for the pooled-audit trigger. No broad "audit"-only terms —
+        # those already belong to PB-AUDIT-001/002/003.
+        required_groups=(
+            _g(
+                "sammelaudit", "sammel-audit", "sammel audit",
+                "pooled audit", "pooled-audit",
+                "verbundaudit", "verbund-audit", "verbund audit",
+                "multi-customer audit", "multi customer audit",
+                "mehrere auftraggeber gemeinsam",
+                "mehrerer auftraggeber gemeinsam",
+            ),
+        ),
+        support_groups=(),
+        negative_any=(
+            # Matrix v1.3 AUD-007 safe_markers: kontrollierter Fall ist
+            # explizit schriftlich freigegeben, unter Mandantenschutz
+            # und mit koordiniertem Dritten.
+            "schriftliche freigabe", "schriftlicher freigabe",
+            "vorherige schriftliche freigabe",
+            "nach vorheriger schriftlicher freigabe",
+            "mandantenschutz",
+            "koordinierter dritter", "koordinierter dritter mit mandat",
+            "koordiniert mit dem auftragnehmer",
+            "schriftliches mandat", "schriftlich mandatiert",
+        ),
+        min_support_hits=0,
+    ),
+    "PB-AUDIT-005": KeywordSignature(
+        # Matrix v1.3 AUD-009: active technical tests (pentest, schwach-
+        # stellenscan, red team, tests gegen shared infrastructure,
+        # invasive tests) are a distinct risk. Risky case = active
+        # technical test without vorherige Freigabe / InfoSec-Anfrage /
+        # Fragebogen / Zeitfenster / Abbruchkriterien. The controlled
+        # variant is defensively blocked via negative_any.
+        required_groups=(
+            _g(
+                "penetrationstest", "penetration test",
+                "pentest",
+                "schwachstellenscan", "vulnerability scan", "vulnerability-scan",
+                "red team", "red-team",
+                "aktive technische prüfung", "aktive technische prüfungen",
+                "aktive technische tests", "aktiver technischer test",
+                "invasive tests", "invasiver test",
+                "shared infrastruktur", "shared-infrastruktur",
+                "gemeinsam genutzte infrastruktur",
+            ),
+        ),
+        support_groups=(),
+        negative_any=(
+            # Matrix v1.3 AUD-009 safe_markers: vorherige Freigabe /
+            # Anfrage an InfoSec / Fragebogen / Zeitfenster /
+            # Abbruchkriterien.
+            "vorherige freigabe", "nach vorheriger freigabe",
+            "anfrage an infosec", "antrag an infosec",
+            "fragebogen",
+            "vorherige schriftliche genehmigung",
+            "nach schriftlicher genehmigung",
+            "schriftliche genehmigung",
+            "definiertes zeitfenster", "abgestimmtes zeitfenster",
+            "vereinbartes zeitfenster",
+            "abbruchkriterien", "abbruchkriterium",
+            "abbruchbedingungen",
+        ),
+        min_support_hits=0,
+    ),
 
     # -------------------------------------------------------------- INCIDENT
     "PB-INC-001": KeywordSignature(
@@ -626,6 +699,16 @@ def _derive_key_from_pattern(pe: PlaybookEntry) -> str | None:
     theme = pe.theme.value if hasattr(pe.theme, "value") else str(pe.theme)
 
     if theme == "audit_rights":
+        # Specific patterns first — Sammelaudit + Pentest are Matrix v1.3
+        # additions and must not fall through to the generic PB-AUDIT-001/002/003
+        # ranking based on their risk_pattern wording.
+        if ("sammelaudit" in pattern or "pooled" in pattern
+                or "verbundaudit" in pattern or "multi-customer" in pattern):
+            return "PB-AUDIT-004"
+        if ("pentest" in pattern or "penetrationstest" in pattern
+                or "schwachstellenscan" in pattern or "red team" in pattern
+                or "aktive technische" in pattern or "invasive test" in pattern):
+            return "PB-AUDIT-005"
         if "unbegrenzt" in pattern or "häufigkeitslimit" in pattern or "vorlaufzeit" in pattern:
             return "PB-AUDIT-001"
         if "endkunde" in pattern or "dritte" in pattern or "drittprüfer" in pattern:
