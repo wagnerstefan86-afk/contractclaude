@@ -144,6 +144,41 @@ class LLMClient:
         return (model or ""), (api_key or ""), base_url
 
     # ------------------------------------------------------------------
+    # Timeout policy
+    # ------------------------------------------------------------------
+
+    # Cloud providers historically used 60s — kept identical to avoid
+    # behavioural drift on existing OpenAI / Gemini / Anthropic deployments.
+    _DEFAULT_TIMEOUT_SECONDS = 60
+
+    # Local providers (Ollama, vLLM, LM Studio, ...) typically run on
+    # smaller machines and need a much larger budget. 300s is the
+    # default; the operator can override via LOCAL_LLM_TIMEOUT_SECONDS.
+    _LOCAL_TIMEOUT_SECONDS_DEFAULT = 300
+
+    def _resolve_timeout(self, explicit: int | None) -> int:
+        """Return the effective timeout for this call.
+
+        - If the caller passed an explicit value, it wins (any provider).
+        - Else, for ``local``: ``LOCAL_LLM_TIMEOUT_SECONDS`` env, fallback 300.
+        - Else, for cloud providers: 60.
+        """
+        if explicit is not None:
+            return int(explicit)
+        if self.provider == "local":
+            try:
+                v = int(os.getenv(
+                    "LOCAL_LLM_TIMEOUT_SECONDS",
+                    str(self._LOCAL_TIMEOUT_SECONDS_DEFAULT),
+                ))
+                if v < 1:
+                    v = self._LOCAL_TIMEOUT_SECONDS_DEFAULT
+                return v
+            except ValueError:
+                return self._LOCAL_TIMEOUT_SECONDS_DEFAULT
+        return self._DEFAULT_TIMEOUT_SECONDS
+
+    # ------------------------------------------------------------------
     # Dispatch
     # ------------------------------------------------------------------
 
@@ -152,19 +187,20 @@ class LLMClient:
         developer_prompt: str,
         user_prompt: str,
         json_schema: dict,
-        timeout: int = 60,
+        timeout: int | None = None,
     ) -> dict:
+        effective_timeout = self._resolve_timeout(timeout)
         if self.provider in ("openai", "local"):
             return self._call_openai_compatible(
-                developer_prompt, user_prompt, json_schema, timeout
+                developer_prompt, user_prompt, json_schema, effective_timeout
             )
         if self.provider == "anthropic":
             return self._call_anthropic(
-                developer_prompt, user_prompt, json_schema, timeout
+                developer_prompt, user_prompt, json_schema, effective_timeout
             )
         if self.provider == "gemini":
             return self._call_gemini(
-                developer_prompt, user_prompt, json_schema, timeout
+                developer_prompt, user_prompt, json_schema, effective_timeout
             )
         raise ValueError(f"Unsupported LLM provider: {self.provider}")
 
@@ -204,6 +240,12 @@ class LLMClient:
 
         last_err: Exception | None = None
         for attempt in range(3):
+            # Diagnostic line — provider/model/timeout/attempt only, no
+            # prompt or contract content.
+            logger.info(
+                "LLM attempt provider=%s model=%s timeout=%ds attempt=%d/3",
+                self.provider, self.model, timeout, attempt + 1,
+            )
             try:
                 start = time.time()
                 response = client.chat.completions.create(
