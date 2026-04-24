@@ -125,6 +125,12 @@ def ingest_document(document_id: str, db: Session) -> dict:
             heading=raw.heading_path[-1] if raw.heading_path else None,
             heading_path=raw.heading_path if raw.heading_path else None,
             page_number=raw.page_from,
+            # Phase: Evidence-Lokalisierung. Der PDF-Parser liefert
+            # bereits page_from/page_to pro Segment; DOCX kann keine
+            # echte Seite ausweisen → bleibt NULL und wird im UI als
+            # "nicht verfügbar (DOCX)" markiert. Keine LLM-Erfindung.
+            page_start=raw.page_from,
+            page_end=raw.page_to if raw.page_to is not None else raw.page_from,
             routing_tier=scan_result.routing_tier,
             deterministic_flags=scan_result.deterministic_flags or None,
             routed_themes=scan_result.routed_themes or None,

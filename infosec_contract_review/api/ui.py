@@ -591,6 +591,17 @@ def export_findings_xlsx(
         "Reviewer-Verdict",
         "Reviewer-Kommentar",
         "Verdict aktualisiert",
+        # Evidence locator columns. One row per finding; multiple
+        # evidences in one finding are joined with the same "\n---\n"
+        # separator already used in the "Evidenzen" column so the
+        # locator stays aligned line-by-line. Headings/Pages stay
+        # empty per evidence when not extractable from the source
+        # (e.g. DOCX → no real page numbers).
+        "Dokumentname",
+        "Seite (Start)",
+        "Seite (Ende)",
+        "Abschnitt (Heading-Pfad)",
+        "Evidenztext",
     ]
     ws.append(headers)
 
@@ -632,11 +643,57 @@ def export_findings_xlsx(
         "M": 18,
         "N": 40,
         "O": 20,
+        "P": 30,
+        "Q": 12,
+        "R": 12,
+        "S": 40,
+        "T": 60,
     }
     for col_letter, width in column_widths.items():
         ws.column_dimensions[col_letter].width = width
 
     wrap_align = Alignment(vertical="top", wrap_text=True)
+
+    # Bulk-load all referenced segments + their documents so the export
+    # stays O(1) per finding instead of N+1 across evidences.
+    all_seg_ids = [
+        ev.segment_id for f in findings for ev in (f.evidences or []) if ev.segment_id
+    ]
+    seg_by_id = {
+        s.id: s
+        for s in (
+            db.query(Segment).filter(Segment.id.in_(all_seg_ids)).all()
+            if all_seg_ids
+            else []
+        )
+    }
+    doc_ids = {s.document_id for s in seg_by_id.values()}
+    doc_by_id = {
+        d.id: d
+        for d in (db.query(Document).filter(Document.id.in_(doc_ids)).all() if doc_ids else [])
+    }
+
+    def _evidence_locator(ev) -> tuple[str, str, str, str, str]:
+        """Return (doc_name, page_start, page_end, heading_path, quote) for one evidence row."""
+        seg = seg_by_id.get(ev.segment_id) if ev.segment_id else None
+        doc = doc_by_id.get(seg.document_id) if seg else None
+        doc_name = doc.filename if doc else ""
+        ps = getattr(seg, "page_start", None) if seg else None
+        pe = getattr(seg, "page_end", None) if seg else None
+        if ps is None and pe is None and seg and seg.page_number is not None:
+            ps = pe = seg.page_number
+        if ps is None and pe is None:
+            ext = (doc.filename.rsplit(".", 1)[-1].lower()
+                   if doc and "." in (doc.filename or "") else "")
+            page_start_str = "nicht verfügbar (DOCX)" if ext in ("docx", "doc") else "unbekannt"
+            page_end_str = page_start_str
+        else:
+            page_start_str = str(ps) if ps is not None else ""
+            page_end_str = str(pe) if pe is not None else ""
+        heading_path = list(seg.heading_path) if seg and seg.heading_path else []
+        heading_str = " > ".join(heading_path) if heading_path else ""
+        quote = (ev.quote or "").strip()
+        return doc_name, page_start_str, page_end_str, heading_str, quote
 
     for idx, f in enumerate(findings, start=1):
         evidences_text = "\n---\n".join(
@@ -651,6 +708,17 @@ def export_findings_xlsx(
         verdict_updated = (
             v.updated_at.strftime("%Y-%m-%dT%H:%M:%S") if v and v.updated_at else ""
         )
+
+        # Build the per-evidence locator columns. Multiple evidences
+        # → one line per evidence, joined with the same "---" separator
+        # used in the existing "Evidenzen" column so columns align.
+        locator_rows = [_evidence_locator(ev) for ev in (f.evidences or [])]
+        ev_doc_names = "\n---\n".join(r[0] for r in locator_rows)
+        ev_page_starts = "\n---\n".join(r[1] for r in locator_rows)
+        ev_page_ends = "\n---\n".join(r[2] for r in locator_rows)
+        ev_headings = "\n---\n".join(r[3] for r in locator_rows)
+        ev_texts = "\n---\n".join(r[4] for r in locator_rows)
+
         row = [
             idx,
             theme_label(f.theme),
@@ -667,6 +735,11 @@ def export_findings_xlsx(
             v.verdict if v else "",
             (v.comment if v and v.comment else ""),
             verdict_updated,
+            ev_doc_names,
+            ev_page_starts,
+            ev_page_ends,
+            ev_headings,
+            ev_texts,
         ]
         ws.append(row)
 
@@ -728,6 +801,64 @@ def finding_detail(
         "playbook_entry_id": finding.playbook_entry_id,
     }
 
+    # Resolve evidence locator (doc name, page range, heading path).
+    # No LLM, no guessing: pages come straight from the parser
+    # (PDF: real numbers; DOCX: NULL → "nicht verfügbar (DOCX)").
+    evidence_views = []
+    if finding.evidences:
+        seg_ids = [e.segment_id for e in finding.evidences if e.segment_id]
+        seg_by_id = {}
+        if seg_ids:
+            for seg in (
+                db.query(Segment)
+                .filter(Segment.id.in_(seg_ids))
+                .all()
+            ):
+                seg_by_id[seg.id] = seg
+        # Resolve documents in one batch (Segment has no relationship to Document loaded above).
+        doc_ids = {s.document_id for s in seg_by_id.values()}
+        doc_by_id = {
+            d.id: d
+            for d in (db.query(Document).filter(Document.id.in_(doc_ids)).all() if doc_ids else [])
+        }
+        for ev in finding.evidences:
+            seg = seg_by_id.get(ev.segment_id) if ev.segment_id else None
+            doc = doc_by_id.get(seg.document_id) if seg else None
+            doc_name = doc.filename if doc else None
+            doc_type = (doc.doc_type or "").lower() if doc else ""
+            # Page range. Prefer the new pair; fall back to legacy
+            # page_number if a row predates migration 0008.
+            ps = getattr(seg, "page_start", None) if seg else None
+            pe = getattr(seg, "page_end", None) if seg else None
+            if ps is None and pe is None and seg and seg.page_number is not None:
+                ps = pe = seg.page_number
+            if ps is None and pe is None:
+                # DOCX (or any source without page metadata) — explicit,
+                # no fake numbers.
+                source_fmt = (doc.filename.rsplit(".", 1)[-1].lower() if doc and "." in (doc.filename or "") else "")
+                if source_fmt in ("docx", "doc"):
+                    page_label = "Seite: nicht verfügbar (DOCX)"
+                else:
+                    page_label = "Seite: unbekannt"
+            else:
+                if ps is not None and pe is not None and ps != pe:
+                    page_label = f"S. {ps}–{pe}"
+                else:
+                    page_label = f"S. {ps if ps is not None else pe}"
+            heading_path = list(seg.heading_path) if seg and seg.heading_path else []
+            evidence_views.append({
+                "id": ev.id,
+                "quote": ev.quote,
+                "rationale": ev.rationale,
+                "segment_id": ev.segment_id,
+                "document_name": doc_name,
+                "page_start": ps,
+                "page_end": pe,
+                "page_label": page_label,
+                "heading_path": heading_path,
+                "heading_path_str": " > ".join(heading_path) if heading_path else "",
+            })
+
     verdict_row = (
         db.query(ReviewerVerdict)
         .filter_by(finding_id=finding_id)
@@ -738,6 +869,7 @@ def finding_detail(
         "package_name": pkg.name,
         "finding": finding_dict,
         "evidences": finding.evidences,
+        "evidence_views": evidence_views,
         "missing_safeguards": finding.missing_safeguards,
         "review_saved": bool(review_saved),
         "verdict_saved": bool(verdict_saved),

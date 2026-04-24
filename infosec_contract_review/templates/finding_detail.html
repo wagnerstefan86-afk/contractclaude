@@ -38,14 +38,21 @@
 </div>
 {% endif %}
 
-{% if evidences %}
+{% if evidence_views %}
 <div class="card mb-3">
-    <div class="card-header"><strong>Evidenzen ({{ evidences|length }})</strong></div>
+    <div class="card-header"><strong>Evidenzen ({{ evidence_views|length }})</strong></div>
     <div class="card-body">
-        {% for ev in evidences %}
+        {% for ev in evidence_views %}
         <div class="card evidence-card p-2 mb-2">
+            {# Locator line: <Dokument>, <Seitenbereich>, <Heading-Pfad>.
+               Heading-Pfad nur, wenn vom Parser geliefert — keine LLM-Erfindung. #}
+            <div class="small text-muted mb-1">
+                {% if ev.document_name %}<strong>{{ ev.document_name }}</strong>{% else %}<em>Dokument unbekannt</em>{% endif %}
+                · {{ ev.page_label }}
+                {% if ev.heading_path_str %}· Abschnitt {{ ev.heading_path_str }}{% endif %}
+            </div>
             {% if ev.quote %}<div><em>„{{ ev.quote[:300] }}{% if ev.quote|length > 300 %}…{% endif %}"</em></div>{% endif %}
-            {% if ev.rationale %}<div class="text-muted small">{{ ev.rationale[:200] }}</div>{% endif %}
+            {% if ev.rationale %}<div class="text-muted small mt-1">{{ ev.rationale[:200] }}</div>{% endif %}
             {% if ev.segment_id %}<div class="text-muted small">Segment: {{ short_id(ev.segment_id) }}</div>{% endif %}
         </div>
         {% endfor %}

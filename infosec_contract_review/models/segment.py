@@ -19,6 +19,10 @@ class Segment(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     heading: Mapped[str | None] = mapped_column(String(500), nullable=True)
     heading_path: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Page-range fields (added in migration 0008). page_number is kept
+    # for backward compatibility but new code should prefer the pair.
+    page_start: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    page_end: Mapped[int | None] = mapped_column(Integer, nullable=True)
     routing_tier: Mapped[str | None] = mapped_column(String(30), nullable=True)
     deterministic_flags: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     routed_themes: Mapped[list | None] = mapped_column(JSONB, nullable=True)
