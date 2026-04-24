@@ -33,8 +33,18 @@ def run_obligation_extraction(
     if not run or run.package_id != package_id:
         raise ValueError(f"Run {run_id} not found in package {package_id}")
 
-    if run.status != RunStatus.PENDING:
-        raise ValueError(f"Run {run_id} has status '{run.status.value}', expected 'pending'")
+    if run.status not in (RunStatus.PENDING, RunStatus.RUNNING):
+        # PENDING: classic path (run created with default status, pipeline
+        #          flips it to RUNNING below).
+        # RUNNING: async UI path (the route flips the run to RUNNING up
+        #          front so the package detail page reflects the new
+        #          state immediately, then spawns the pipeline in a
+        #          background thread).
+        # Any other status (COMPLETED/FAILED/...) is a real conflict.
+        raise ValueError(
+            f"Run {run_id} has status '{run.status.value}', "
+            f"expected 'pending' or 'running'"
+        )
 
     existing_count = db.query(Obligation).filter_by(run_id=run_id).count()
     if existing_count > 0:
