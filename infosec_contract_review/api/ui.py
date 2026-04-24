@@ -734,11 +734,20 @@ def export_findings_xlsx(
         for d in (db.query(Document).filter(Document.id.in_(doc_ids)).all() if doc_ids else [])
     }
 
+    # Placeholder used when a locator field has no value for a given
+    # evidence. Keeping a visible "–" guarantees that every evidence
+    # produces a non-empty entry in EVERY column, so reviewers can
+    # count entries per column and have them line up — including
+    # cases where the source has no document, no heading, or no page.
+    _NO_VALUE = "–"
+
     def _evidence_locator(ev) -> tuple[str, str, str, str, str]:
-        """Return (doc_name, page_start, page_end, heading_path, quote) for one evidence row."""
+        """Return (doc_name, page_start, page_end, heading_path, quote)
+        for one evidence row. All five fields are guaranteed non-empty
+        so the five columns stay aligned line-for-line."""
         seg = seg_by_id.get(ev.segment_id) if ev.segment_id else None
         doc = doc_by_id.get(seg.document_id) if seg else None
-        doc_name = doc.filename if doc else ""
+        doc_name = (doc.filename if doc else "") or _NO_VALUE
         ps = getattr(seg, "page_start", None) if seg else None
         pe = getattr(seg, "page_end", None) if seg else None
         if ps is None and pe is None and seg and seg.page_number is not None:
@@ -749,17 +758,30 @@ def export_findings_xlsx(
             page_start_str = "nicht verfügbar (DOCX)" if ext in ("docx", "doc") else "unbekannt"
             page_end_str = page_start_str
         else:
-            page_start_str = str(ps) if ps is not None else ""
-            page_end_str = str(pe) if pe is not None else ""
+            page_start_str = str(ps) if ps is not None else _NO_VALUE
+            page_end_str = str(pe) if pe is not None else _NO_VALUE
         heading_path = list(seg.heading_path) if seg and seg.heading_path else []
-        heading_str = " > ".join(heading_path) if heading_path else ""
-        quote = (ev.quote or "").strip()
+        heading_str = " > ".join(heading_path) if heading_path else _NO_VALUE
+        quote = (ev.quote or "").strip() or _NO_VALUE
         return doc_name, page_start_str, page_end_str, heading_str, quote
 
     for idx, f in enumerate(findings, start=1):
-        evidences_text = "\n---\n".join(
-            (e.quote or "").strip() for e in f.evidences if (e.quote or "").strip()
-        )
+        # ONE canonical evidence list per finding. The legacy
+        # "Evidenzen" column AND the five locator columns all iterate
+        # this list in the same order with the same separator, so a
+        # given line N in any of the six columns refers to the same
+        # evidence. Previously the legacy column filtered empty
+        # quotes while the locator columns did not, which shifted
+        # values between the two groups.
+        evidences = list(f.evidences or [])
+        locator_rows = [_evidence_locator(ev) for ev in evidences]
+
+        # Legacy "Evidenzen" column: one cell line per evidence in the
+        # SAME order as the locator columns, using the SAME placeholder
+        # ("–") for empty quotes so all six columns line up entry-for-
+        # entry. Reviewers can therefore read across columns at line N
+        # and trust they see the same evidence.
+        evidences_text = "\n---\n".join(r[4] for r in locator_rows)
         missing_text = ", ".join(
             (ms.label or ms.safeguard_key) for ms in f.missing_safeguards
         )
@@ -770,15 +792,13 @@ def export_findings_xlsx(
             v.updated_at.strftime("%Y-%m-%dT%H:%M:%S") if v and v.updated_at else ""
         )
 
-        # Build the per-evidence locator columns. Multiple evidences
-        # → one line per evidence, joined with the same "---" separator
-        # used in the existing "Evidenzen" column so columns align.
-        locator_rows = [_evidence_locator(ev) for ev in (f.evidences or [])]
-        ev_doc_names = "\n---\n".join(r[0] for r in locator_rows)
+        # All five locator columns are derived from the SAME
+        # locator_rows iterator — guarantees positional alignment.
+        ev_doc_names   = "\n---\n".join(r[0] for r in locator_rows)
         ev_page_starts = "\n---\n".join(r[1] for r in locator_rows)
-        ev_page_ends = "\n---\n".join(r[2] for r in locator_rows)
-        ev_headings = "\n---\n".join(r[3] for r in locator_rows)
-        ev_texts = "\n---\n".join(r[4] for r in locator_rows)
+        ev_page_ends   = "\n---\n".join(r[2] for r in locator_rows)
+        ev_headings    = "\n---\n".join(r[3] for r in locator_rows)
+        ev_texts       = "\n---\n".join(r[4] for r in locator_rows)
 
         row = [
             idx,
