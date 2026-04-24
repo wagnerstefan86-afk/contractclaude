@@ -83,9 +83,13 @@ def run_obligation_extraction(
 
     run.status = RunStatus.RUNNING
     prompt_versions = {}
-    db.flush()
 
     llm_client = LLMClient()
+    # Snapshot the active provider + model on the run so a later
+    # re-read stays traceable even if the singleton is switched.
+    run.llm_provider = llm_client.provider
+    run.llm_model = llm_client.model
+    db.flush()
     total_obligations = 0
     total_tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
     total_errors = 0

@@ -40,6 +40,11 @@ from infosec_contract_review.models.reviewer_verdict import (
     ALLOWED_VERDICTS,
     ReviewerVerdict,
 )
+from infosec_contract_review.models.ai_settings import (
+    ALLOWED_PROVIDERS,
+    AiSettings,
+)
+from infosec_contract_review.llm.client import LLMClient
 from infosec_contract_review.models.obligation import Obligation, ObligationLimits
 from infosec_contract_review.models.package import (
     ContractPackage,
@@ -1019,3 +1024,138 @@ def ui_delete_package(package_id: str, db: Session = Depends(get_db)):
     msg = f"Paket+'{pkg_name}'+gelöscht+({summary['documents']}+Dokumente,+{summary['findings']}+Findings,+{summary['files_removed']}+Dateien)"
     return RedirectResponse(url=f"/ui/?msg={msg}", status_code=303)
 
+
+
+# ---------------------------------------------------------------------------
+# AI Settings (singleton, Phase 4)
+#
+# Strikt genau EIN aktiver Provider pro Instanz. Kein Per-Vertrag-Routing,
+# keine Policy-Schicht, keine Fallback-Kette. Secrets werden im UI maskiert
+# und ein leeres Secret-Feld überschreibt den Bestand NICHT.
+# ---------------------------------------------------------------------------
+
+_SECRET_FIELDS = (
+    "local_api_key",
+    "openai_api_key",
+    "gemini_api_key",
+    "anthropic_api_key",
+)
+
+
+def _get_or_create_ai_settings(db: Session) -> AiSettings:
+    row = db.get(AiSettings, 1)
+    if row is None:
+        row = AiSettings(id=1, active_provider="openai")
+        db.add(row)
+        db.flush()
+    return row
+
+
+def _mask_secret(value: str | None) -> str:
+    if not value:
+        return ""
+    if len(value) <= 8:
+        return "****"
+    return f"****{value[-4:]}"
+
+
+@router.get("/settings/ai", response_class=HTMLResponse)
+def ai_settings_get(
+    request: Request,
+    saved: str = "",
+    test_ok: str = "",
+    test_err: str = "",
+    db: Session = Depends(get_db),
+):
+    row = _get_or_create_ai_settings(db)
+    ctx = {
+        "active_provider": row.active_provider,
+        "local_base_url": row.local_base_url or "",
+        "local_model": row.local_model or "",
+        "local_api_key_masked": _mask_secret(row.local_api_key),
+        "openai_api_key_masked": _mask_secret(row.openai_api_key),
+        "openai_model": row.openai_model or "",
+        "openai_base_url": row.openai_base_url or "",
+        "gemini_api_key_masked": _mask_secret(row.gemini_api_key),
+        "gemini_model": row.gemini_model or "",
+        "anthropic_api_key_masked": _mask_secret(row.anthropic_api_key),
+        "anthropic_model": row.anthropic_model or "",
+        "updated_at": row.updated_at,
+        "saved": bool(saved),
+        "test_ok": test_ok or "",
+        "test_err": test_err or "",
+        "providers": ALLOWED_PROVIDERS,
+    }
+    return templates.TemplateResponse(
+        request=request, name="ai_settings.html", context=ctx,
+    )
+
+
+@router.post("/settings/ai")
+def ai_settings_save(
+    active_provider: str = Form(...),
+    local_base_url: str = Form(""),
+    local_model: str = Form(""),
+    local_api_key: str = Form(""),
+    openai_api_key: str = Form(""),
+    openai_model: str = Form(""),
+    openai_base_url: str = Form(""),
+    gemini_api_key: str = Form(""),
+    gemini_model: str = Form(""),
+    anthropic_api_key: str = Form(""),
+    anthropic_model: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    if active_provider not in ALLOWED_PROVIDERS:
+        return HTMLResponse(
+            f"<h1>Ungültiger Provider</h1><p>Erlaubt: {', '.join(ALLOWED_PROVIDERS)}</p>",
+            status_code=400,
+        )
+    row = _get_or_create_ai_settings(db)
+    row.active_provider = active_provider
+
+    # Non-secret fields: always update with the submitted value (empty
+    # string clears the field, which is the correct UX).
+    row.local_base_url = local_base_url.strip() or None
+    row.local_model = local_model.strip() or None
+    row.openai_model = openai_model.strip() or None
+    row.openai_base_url = openai_base_url.strip() or None
+    row.gemini_model = gemini_model.strip() or None
+    row.anthropic_model = anthropic_model.strip() or None
+
+    # Secrets: empty field ≠ clear. Only update when the operator typed
+    # a new value. This prevents accidental wipes when the masked field
+    # is left alone during a routine save.
+    if local_api_key.strip():
+        row.local_api_key = local_api_key.strip()
+    if openai_api_key.strip():
+        row.openai_api_key = openai_api_key.strip()
+    if gemini_api_key.strip():
+        row.gemini_api_key = gemini_api_key.strip()
+    if anthropic_api_key.strip():
+        row.anthropic_api_key = anthropic_api_key.strip()
+
+    db.commit()
+    logger.info("AI settings saved (active_provider=%s)", active_provider)
+    return RedirectResponse(url="/ui/settings/ai?saved=1", status_code=303)
+
+
+@router.post("/settings/ai/test")
+def ai_settings_test(db: Session = Depends(get_db)):
+    """Send a minimal ping to the active provider and redirect back
+    with a flash result."""
+    row = _get_or_create_ai_settings(db)
+    # LLMClient() picks up the singleton via _load_active_settings().
+    client = LLMClient()
+    result = client.ping()
+    from urllib.parse import quote
+
+    if result.get("ok"):
+        msg = quote(
+            f"Verbindung ok (Provider: {result['provider']}, Modell: {result['model'] or '–'})"
+        )
+        return RedirectResponse(
+            url=f"/ui/settings/ai?test_ok={msg}", status_code=303,
+        )
+    err = quote(f"Fehler: {result.get('detail', 'unknown')}")
+    return RedirectResponse(url=f"/ui/settings/ai?test_err={err}", status_code=303)

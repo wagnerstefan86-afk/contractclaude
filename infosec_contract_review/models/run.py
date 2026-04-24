@@ -16,6 +16,10 @@ class AnalysisRun(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
     config_snapshot: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Snapshot of the active LLM provider + model at run start (Phase 4).
+    # Not used for pipeline branching; retrospective trace only.
+    llm_provider: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     steps: Mapped[list["RunStep"]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
