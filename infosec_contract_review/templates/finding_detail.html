@@ -93,4 +93,50 @@
         {% endif %}
     </div>
 </div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <strong>Pipeline-Feedback (Shadow Mode)</strong>
+        <small class="text-muted ms-2">
+            Unabhängig vom Review-Status oben. Dient der Pipeline-Kalibrierung.
+        </small>
+    </div>
+    <div class="card-body">
+        <form method="post" action="/ui/packages/{{ package_id }}/findings/{{ finding.id }}/verdict">
+            <div class="btn-group mb-2" role="group" aria-label="Reviewer-Verdict">
+                <input type="radio" class="btn-check" name="verdict" id="verdict-correct"
+                       value="correct" autocomplete="off"
+                       {% if verdict and verdict.verdict == 'correct' %}checked{% endif %} required>
+                <label class="btn btn-outline-success" for="verdict-correct">Korrekt</label>
+
+                <input type="radio" class="btn-check" name="verdict" id="verdict-fp"
+                       value="false_positive" autocomplete="off"
+                       {% if verdict and verdict.verdict == 'false_positive' %}checked{% endif %}>
+                <label class="btn btn-outline-danger" for="verdict-fp">False Positive</label>
+
+                <input type="radio" class="btn-check" name="verdict" id="verdict-fn"
+                       value="false_negative" autocomplete="off"
+                       {% if verdict and verdict.verdict == 'false_negative' %}checked{% endif %}>
+                <label class="btn btn-outline-warning" for="verdict-fn">False Negative</label>
+
+                <input type="radio" class="btn-check" name="verdict" id="verdict-review"
+                       value="review_only" autocomplete="off"
+                       {% if verdict and verdict.verdict == 'review_only' %}checked{% endif %}>
+                <label class="btn btn-outline-secondary" for="verdict-review">Review only</label>
+            </div>
+            <input type="text" name="comment" class="form-control form-control-sm mb-2"
+                   placeholder="Optionaler Kommentar"
+                   value="{{ verdict.comment if verdict and verdict.comment else '' }}">
+            <button type="submit" class="btn btn-sm btn-primary">Verdict speichern</button>
+            {% if verdict and verdict.updated_at %}
+            <small class="text-muted ms-2">
+                zuletzt aktualisiert: {{ verdict.updated_at.strftime('%d.%m.%Y %H:%M') }}
+            </small>
+            {% endif %}
+        </form>
+        {% if verdict_saved %}
+        <div class="alert alert-success mt-2 mb-0 py-1">Verdict gespeichert.</div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

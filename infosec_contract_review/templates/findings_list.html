@@ -45,6 +45,18 @@
         </select>
     </div>
     <div class="col-auto">
+        {# Verdict-Filter: "Noch offen" bedeutet strikt: noch kein reviewer_verdict
+           vorhanden. Das ist UNABHÄNGIG vom Business-Status oben (open/accepted/...). #}
+        <select name="verdict" class="form-select form-select-sm">
+            <option value="">Alle Verdicts</option>
+            <option value="none" {% if filter_verdict == 'none' %}selected{% endif %}>Noch offen</option>
+            <option value="correct" {% if filter_verdict == 'correct' %}selected{% endif %}>Korrekt</option>
+            <option value="false_positive" {% if filter_verdict == 'false_positive' %}selected{% endif %}>False Positive</option>
+            <option value="false_negative" {% if filter_verdict == 'false_negative' %}selected{% endif %}>False Negative</option>
+            <option value="review_only" {% if filter_verdict == 'review_only' %}selected{% endif %}>Review only</option>
+        </select>
+    </div>
+    <div class="col-auto">
         <input type="text" name="q" class="form-control form-control-sm" placeholder="Suche…" value="{{ search_q or '' }}">
     </div>
     <div class="col-auto">
@@ -53,7 +65,11 @@
 </form>
 
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <span class="text-muted">{{ findings|length }} Findings</span>
+    <span class="text-muted">
+        {{ n_total }} Findings
+        – {{ n_with_verdict }} mit Verdict
+        – {{ n_open_verdict }} noch offen
+    </span>
     <a href="/ui/packages/{{ package_id }}/findings/export.xlsx" class="btn btn-sm btn-outline-success">
         Findings als Excel exportieren
     </a>
@@ -81,6 +97,7 @@
             <th>Materialität</th>
             <th>Status</th>
             <th>Playbook</th>
+            <th>Verdict</th>
             <th>Erstellt</th>
         </tr>
     </thead>
@@ -89,10 +106,37 @@
         <tr class="status-{{ f.status }}">
             <td><small>{{ theme_label(f.theme) }}</small></td>
             <td><a href="/ui/packages/{{ package_id }}/findings/{{ f.id }}">{{ f.title[:80] }}{% if f.title|length > 80 %}…{% endif %}</a></td>
-            <td><span class="severity-{{ f.severity }}">{{ severity_label(f.severity) }}</span></td>
+            <td>
+                {% if f.severity == 'critical' %}
+                <span class="badge bg-danger">{{ severity_label(f.severity) }}</span>
+                {% elif f.severity == 'high' %}
+                <span class="badge severity-badge-high">{{ severity_label(f.severity) }}</span>
+                {% elif f.severity == 'medium' %}
+                <span class="badge bg-warning text-dark">{{ severity_label(f.severity) }}</span>
+                {% elif f.severity == 'low' %}
+                <span class="badge bg-success">{{ severity_label(f.severity) }}</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ severity_label(f.severity) }}</span>
+                {% endif %}
+            </td>
             <td>{{ materiality_label(f.materiality) }}</td>
             <td>{{ status_label(f.status) }}</td>
-            <td>{% if f.playbook_entry_id %}✓{% else %}–{% endif %}</td>
+            <td>
+                {% if f.playbook_entry_id %}
+                <span class="badge bg-info text-dark">{{ f.playbook_entry_id }}</span>
+                {% else %}–{% endif %}
+            </td>
+            <td>
+                {% if f.verdict == 'correct' %}
+                <span class="badge bg-success">✓ Korrekt</span>
+                {% elif f.verdict == 'false_positive' %}
+                <span class="badge bg-danger">✗ FP</span>
+                {% elif f.verdict == 'false_negative' %}
+                <span class="badge bg-warning text-dark">! FN</span>
+                {% elif f.verdict == 'review_only' %}
+                <span class="badge bg-secondary">? Review</span>
+                {% else %}–{% endif %}
+            </td>
             <td><small>{{ f.created_at.strftime('%d.%m.%Y') }}</small></td>
         </tr>
         {% endfor %}

@@ -365,3 +365,41 @@ class CrossThemeCandidateOut(BaseModel):
     obligation_ids_theme_a: list | None = None
     obligation_ids_theme_b: list | None = None
     created_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Reviewer Verdict (shadow-mode pipeline feedback, 1:1 per finding)
+# ---------------------------------------------------------------------------
+
+from pydantic import field_validator
+
+from infosec_contract_review.models.reviewer_verdict import ALLOWED_VERDICTS
+
+
+class ReviewerVerdictIn(BaseModel):
+    """Reviewer-provided verdict on a finding. App-level validation of the
+    allowed value set; the DB stores `verdict` as a plain string."""
+
+    verdict: str
+    comment: str | None = None
+    reviewer: str | None = None
+
+    @field_validator("verdict")
+    @classmethod
+    def _check_verdict(cls, v: str) -> str:
+        if v not in ALLOWED_VERDICTS:
+            raise ValueError(
+                f"verdict must be one of {ALLOWED_VERDICTS}, got {v!r}"
+            )
+        return v
+
+
+class ReviewerVerdictOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    finding_id: str
+    verdict: str
+    comment: str | None = None
+    reviewer: str | None = None
+    created_at: datetime
+    updated_at: datetime

@@ -10,11 +10,28 @@
         .severity-high { color: #fd7e14; font-weight: bold; }
         .severity-medium { color: #ffc107; }
         .severity-low { color: #198754; }
+        /* Orange badge for severity=high so it stays visually distinct from
+           critical (red) in the findings table. */
+        .severity-badge-high {
+            background-color: #fd7e14;
+            color: #fff;
+        }
         .status-open { background-color: #fff3cd; }
         .status-accepted { background-color: #d1e7dd; }
         .status-rejected { background-color: #f8d7da; }
         .status-mitigated { background-color: #cfe2ff; }
-        .evidence-card { border-left: 3px solid #0d6efd; margin-bottom: 0.5rem; }
+        /* Evidence presence: wider left border, more padding, quote a touch
+           larger than body text, and a slightly off-white background so the
+           quoted text stands out as source evidence. */
+        .evidence-card {
+            border-left: 5px solid #0d6efd;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: #fafbfc;
+        }
+        .evidence-card em {
+            font-size: 1.05rem;
+        }
         .missing-safeguard { border-left: 3px solid #dc3545; }
     </style>
 </head>

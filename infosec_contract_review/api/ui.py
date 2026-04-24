@@ -36,6 +36,10 @@ from infosec_contract_review.models.finding import (
     MissingSafeguard,
     ReviewDecision,
 )
+from infosec_contract_review.models.reviewer_verdict import (
+    ALLOWED_VERDICTS,
+    ReviewerVerdict,
+)
 from infosec_contract_review.models.obligation import Obligation, ObligationLimits
 from infosec_contract_review.models.package import (
     ContractPackage,
@@ -397,6 +401,7 @@ def findings_list(
     materiality: str = "",
     status: str = "",
     q: str = "",
+    verdict: str = "",
     include_info: int = 0,
     db: Session = Depends(get_db),
 ):
@@ -410,7 +415,13 @@ def findings_list(
     # Count informational findings for the banner (independent of filters).
     info_count = base_query.filter(Finding.severity == "info").count() if run_ids else 0
 
-    query = base_query
+    # Verdict filter uses a LEFT JOIN on reviewer_verdicts. This is
+    # STRICTLY separate from the business-workflow Finding.status field.
+    # "Noch offen" here means: no reviewer_verdict row exists yet — NOT
+    # that Finding.status == "open".
+    query = base_query.outerjoin(
+        ReviewerVerdict, ReviewerVerdict.finding_id == Finding.id
+    )
     if theme:
         query = query.filter(Finding.theme == theme)
     if severity:
@@ -424,6 +435,12 @@ def findings_list(
     if status:
         query = query.filter(Finding.status == status)
 
+    if verdict == "none":
+        # "Noch offen" = kein reviewer_verdict vorhanden (LEFT JOIN → NULL)
+        query = query.filter(ReviewerVerdict.id.is_(None))
+    elif verdict in ALLOWED_VERDICTS:
+        query = query.filter(ReviewerVerdict.verdict == verdict)
+
     findings = query.order_by(Finding.created_at.desc()).all()
 
     if q:
@@ -432,8 +449,22 @@ def findings_list(
 
     all_themes = sorted({_enum_val(f.theme) for f in findings})
 
+    # Bulk-load verdicts so the list page doesn't do N+1.
+    finding_ids = [f.id for f in findings]
+    verdict_by_fid = {
+        v.finding_id: v
+        for v in (
+            db.query(ReviewerVerdict)
+            .filter(ReviewerVerdict.finding_id.in_(finding_ids))
+            .all()
+            if finding_ids
+            else []
+        )
+    }
+
     finding_data = []
     for f in findings:
+        v = verdict_by_fid.get(f.id)
         finding_data.append({
             "id": f.id,
             "theme": _enum_val(f.theme),
@@ -443,7 +474,13 @@ def findings_list(
             "status": _enum_val(f.status),
             "playbook_entry_id": f.playbook_entry_id,
             "created_at": f.created_at,
+            "verdict": v.verdict if v else None,
         })
+
+    # Info-Zeile: {n} Findings – {m} mit Verdict – {k} noch offen
+    n_total = len(finding_data)
+    n_with_verdict = sum(1 for d in finding_data if d["verdict"])
+    n_open_verdict = n_total - n_with_verdict
 
     return templates.TemplateResponse(request=request, name="findings_list.html", context={"package_id": package_id,
         "package_name": pkg.name,
@@ -453,10 +490,15 @@ def findings_list(
         "filter_severity": severity,
         "filter_materiality": materiality,
         "filter_status": status,
+        "filter_verdict": verdict,
         "search_q": q,
         "info_count": info_count,
         "info_hidden": not severity and not include_info,
-        "include_info": bool(include_info)})
+        "include_info": bool(include_info),
+        "verdict_options": ALLOWED_VERDICTS,
+        "n_total": n_total,
+        "n_with_verdict": n_with_verdict,
+        "n_open_verdict": n_open_verdict})
 
 
 # ---------------------------------------------------------------------------
@@ -539,8 +581,26 @@ def export_findings_xlsx(
         "Fehlende Schutzmechanismen",
         "Playbook-ID",
         "Erstellt am",
+        # Shadow-mode verdict columns. Appended at the end — existing
+        # columns keep their order and contents.
+        "Reviewer-Verdict",
+        "Reviewer-Kommentar",
+        "Verdict aktualisiert",
     ]
     ws.append(headers)
+
+    # Bulk-load verdicts for this findings set (zero N+1).
+    finding_ids = [f.id for f in findings]
+    verdict_by_fid = {
+        v.finding_id: v
+        for v in (
+            db.query(ReviewerVerdict)
+            .filter(ReviewerVerdict.finding_id.in_(finding_ids))
+            .all()
+            if finding_ids
+            else []
+        )
+    }
 
     header_font = Font(bold=True)
     header_fill = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
@@ -564,6 +624,9 @@ def export_findings_xlsx(
         "J": 30,
         "K": 20,
         "L": 20,
+        "M": 18,
+        "N": 40,
+        "O": 20,
     }
     for col_letter, width in column_widths.items():
         ws.column_dimensions[col_letter].width = width
@@ -579,6 +642,10 @@ def export_findings_xlsx(
         )
         created_at = f.created_at.strftime("%d.%m.%Y %H:%M") if f.created_at else ""
 
+        v = verdict_by_fid.get(f.id)
+        verdict_updated = (
+            v.updated_at.strftime("%Y-%m-%dT%H:%M:%S") if v and v.updated_at else ""
+        )
         row = [
             idx,
             theme_label(f.theme),
@@ -592,6 +659,9 @@ def export_findings_xlsx(
             missing_text,
             f.playbook_entry_id or "",
             created_at,
+            v.verdict if v else "",
+            (v.comment if v and v.comment else ""),
+            verdict_updated,
         ]
         ws.append(row)
 
@@ -625,6 +695,7 @@ def finding_detail(
     package_id: str,
     finding_id: str,
     review_saved: str = "",
+    verdict_saved: str = "",
     db: Session = Depends(get_db),
 ):
     pkg = db.query(ContractPackage).filter_by(id=package_id).first()
@@ -652,12 +723,21 @@ def finding_detail(
         "playbook_entry_id": finding.playbook_entry_id,
     }
 
+    verdict_row = (
+        db.query(ReviewerVerdict)
+        .filter_by(finding_id=finding_id)
+        .first()
+    )
+
     return templates.TemplateResponse(request=request, name="finding_detail.html", context={"package_id": package_id,
         "package_name": pkg.name,
         "finding": finding_dict,
         "evidences": finding.evidences,
         "missing_safeguards": finding.missing_safeguards,
-        "review_saved": bool(review_saved)})
+        "review_saved": bool(review_saved),
+        "verdict_saved": bool(verdict_saved),
+        "verdict": verdict_row,
+        "verdict_options": ALLOWED_VERDICTS})
 
 
 # ---------------------------------------------------------------------------
@@ -684,6 +764,58 @@ def submit_review(
 
     return RedirectResponse(
         url=f"/ui/packages/{package_id}/findings/{finding_id}?review_saved=1",
+        status_code=303,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Reviewer Verdict (shadow-mode pipeline feedback — 1:1 pro finding)
+#
+# Separat vom business-status oben. Ein bestehendes verdict wird via
+# UPSERT auf finding_id ersetzt; keine Historie.
+# ---------------------------------------------------------------------------
+
+@router.post("/packages/{package_id}/findings/{finding_id}/verdict")
+def submit_verdict(
+    package_id: str,
+    finding_id: str,
+    verdict: str = Form(...),
+    comment: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    finding = db.query(Finding).filter_by(id=finding_id).first()
+    if not finding:
+        return HTMLResponse("<h1>Finding nicht gefunden</h1>", status_code=404)
+
+    # App-level validation (mirrors ReviewerVerdictIn). Deliberately not
+    # a DB enum so values can evolve without a migration.
+    if verdict not in ALLOWED_VERDICTS:
+        return HTMLResponse(
+            f"<h1>Ungültiges Verdict</h1><p>Erlaubt: {', '.join(ALLOWED_VERDICTS)}</p>",
+            status_code=400,
+        )
+
+    existing = (
+        db.query(ReviewerVerdict).filter_by(finding_id=finding_id).first()
+    )
+    comment_clean = (comment or "").strip() or None
+    if existing:
+        existing.verdict = verdict
+        existing.comment = comment_clean
+    else:
+        db.add(ReviewerVerdict(
+            finding_id=finding_id,
+            verdict=verdict,
+            comment=comment_clean,
+        ))
+    db.commit()
+    logger.info(
+        "Verdict finding=%s verdict=%s comment=%s",
+        finding_id, verdict, comment_clean or "–",
+    )
+
+    return RedirectResponse(
+        url=f"/ui/packages/{package_id}/findings/{finding_id}?verdict_saved=1",
         status_code=303,
     )
 
